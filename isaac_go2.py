@@ -18,34 +18,18 @@ args_cli = parser.parse_args()
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-import os
 import torch
 import omni
-import gymnasium as gym
 import carb
 import go2_ctrl
 from go2_env import Go2EnvCfg
-from ctrl_agent_cfg import unitree_go2_agent_cfg
-from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import RslRlVecEnvWrapper, RslRlOnPolicyRunnerCfg
-from omni.isaac.lab_tasks.utils import get_checkpoint_path
-from rsl_rl.runners import OnPolicyRunner
 
 def run_simulator():
     # Environment setup
     go2_env_cfg = Go2EnvCfg()
     go2_env_cfg.scene.num_envs = args_cli.num_envs
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
-    env = gym.make("Isaac-Velocity-Rough-Unitree-Go2-v0", cfg=go2_env_cfg)
-    env = RslRlVecEnvWrapper(env)
-
-    # Low level control: rsl control policy
-    agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
-    ckpt_path = get_checkpoint_path(log_path=os.path.abspath("ckpts"), 
-                                    run_dir=agent_cfg["load_run"], 
-                                    checkpoint=agent_cfg["load_checkpoint"])
-    ppo_runner = OnPolicyRunner(env, agent_cfg, log_dir=None, device=agent_cfg["device"])
-    ppo_runner.load(ckpt_path)
-    policy = ppo_runner.get_inference_policy(device=agent_cfg["device"])
+    env, policy = go2_ctrl.get_rsl_policy(go2_env_cfg)
 
     # Keyboard control
     system_input = carb.input.acquire_input_interface()
@@ -62,9 +46,7 @@ def run_simulator():
             # step the environment
             obs, _, _, _ = env.step(actions)
 
-def main():
-    run_simulator()
 
 if __name__ == "__main__":
-    main()
+    run_simulator()
     simulation_app.close()
