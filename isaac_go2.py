@@ -5,7 +5,10 @@ from omni.isaac.lab.app import AppLauncher
 # add argparse arguments
 parser = argparse.ArgumentParser(description="This script demonstrates different legged robots.")
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to spawn.")
-parser.add_argument("--anti_aliasing", type=int, default=1, help="Anti Aliasing.")
+parser.add_argument("--anti_aliasing", type=int, default=0, help="Anti Aliasing.")
+parser.add_argument("--height", type=int, default=1080, help="Resolution Height.")
+parser.add_argument("--width", type=int, default=1920, help="Resolution Width.")
+
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -35,10 +38,11 @@ def run_simulator():
     env = gym.make("Isaac-Velocity-Rough-Unitree-Go2-v0", cfg=go2_env_cfg)
     env = RslRlVecEnvWrapper(env)
 
-    # rsl control policy
+    # Low level control: rsl control policy
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
     ckpt_path = get_checkpoint_path(log_path=os.path.abspath("ckpts"), 
-                                    run_dir=agent_cfg["load_run"], checkpoint=agent_cfg["load_checkpoint"])
+                                    run_dir=agent_cfg["load_run"], 
+                                    checkpoint=agent_cfg["load_checkpoint"])
     ppo_runner = OnPolicyRunner(env, agent_cfg, log_dir=None, device=agent_cfg["device"])
     ppo_runner.load(ckpt_path)
     policy = ppo_runner.get_inference_policy(device=agent_cfg["device"])
@@ -47,7 +51,6 @@ def run_simulator():
     system_input = carb.input.acquire_input_interface()
     system_input.subscribe_to_keyboard_events(
         omni.appwindow.get_default_app_window().get_keyboard(), go2_ctrl.sub_keyboard_event)
-
 
     # Run simulation
     obs, _ = env.reset()

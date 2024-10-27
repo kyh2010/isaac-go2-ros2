@@ -1,7 +1,7 @@
 from omni.isaac.lab.scene import InteractiveSceneCfg
 from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
+from omni.isaac.lab.sensors import RayCasterCfg, patterns
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 import omni.isaac.lab.sim as sim_utils
@@ -11,10 +11,6 @@ from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
 from omni.isaac.lab.envs import ManagerBasedEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
-from omni.isaac.lab.managers import EventTermCfg as EventTerm
-from omni.isaac.lab.managers import TerminationTermCfg as DoneTerm
-from omni.isaac.lab.managers import RewardTermCfg as RewTerm
-import math
 import go2_ctrl
 
 
@@ -23,19 +19,18 @@ class Go2SimCfg(InteractiveSceneCfg):
     # Terrain
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
-        terrain_type="plane"
+        terrain_type="plane",
     )
 
     # lights
-    dome_light = AssetBaseCfg(
-        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
+    sky_light = AssetBaseCfg(
+        prim_path="/World/skyLight",
+        spawn=sim_utils.DomeLightCfg(color=(0.4, 0.5, 0.7), intensity=2500.0),
     )
 
     # Go2 Robot
     unitree_go2: ArticulationCfg = UNITREE_GO2_CFG.replace(prim_path="{ENV_REGEX_NS}/Go2")
     
-    # Go2 Contact force sensor
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Go2/.*", history_length=3, track_air_time=True)
 
     # Go2 height scanner
     height_scanner = RayCasterCfg(
@@ -43,7 +38,7 @@ class Go2SimCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)), # TODO meter or cm?
         attach_yaw_only=True,
         pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]), # TODO: how this works?
-        debug_vis=True,
+        debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
 
@@ -51,7 +46,7 @@ class Go2SimCfg(InteractiveSceneCfg):
 @configclass
 class ActionsCfg:
     """Action specifications for the environment."""
-    joint_pos = mdp.JointPositionActionCfg(asset_name="unitree_go2", joint_names=[".*"], scale=0.5, use_default_offset=True)
+    joint_pos = mdp.JointPositionActionCfg(asset_name="unitree_go2", joint_names=[".*"])
 
 
 @configclass
