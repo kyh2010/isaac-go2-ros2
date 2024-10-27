@@ -18,10 +18,12 @@ args_cli = parser.parse_args()
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
+import rclpy
 import torch
 import omni
 import carb
 import go2_ctrl
+import ros2_bridge
 from go2_env import Go2EnvCfg
 
 def run_simulator():
@@ -35,6 +37,10 @@ def run_simulator():
     system_input = carb.input.acquire_input_interface()
     system_input.subscribe_to_keyboard_events(
         omni.appwindow.get_default_app_window().get_keyboard(), go2_ctrl.sub_keyboard_event)
+    
+    # ROS2 Bridge
+    rclpy.init()
+    dm = ros2_bridge.RobotDataManager(env)
 
     # Run simulation
     obs, _ = env.reset()
@@ -46,6 +52,8 @@ def run_simulator():
             # step the environment
             obs, _, _, _ = env.step(actions)
 
+            # publish to ROS2
+            dm.pub_ros2_data()
 
 if __name__ == "__main__":
     run_simulator()
