@@ -23,7 +23,7 @@ import torch
 import omni
 import carb
 import go2_ctrl
-import ros2_bridge
+import go2_ros2_bridge
 from go2_env import Go2EnvCfg
 
 def run_simulator():
@@ -40,7 +40,7 @@ def run_simulator():
     
     # ROS2 Bridge
     rclpy.init()
-    dm = ros2_bridge.RobotDataManager(env, args_cli.num_envs)
+    dm = go2_ros2_bridge.RobotDataManager(env, args_cli.num_envs)
 
     # Run simulation
     obs, _ = env.reset()

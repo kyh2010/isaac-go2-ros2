@@ -3,7 +3,7 @@ import torch
 import carb
 import gymnasium as gym
 from omni.isaac.lab.envs import ManagerBasedEnv
-from ctrl_agent_cfg import unitree_go2_agent_cfg
+from go2_ctrl_cfg import unitree_go2_agent_cfg
 from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import RslRlVecEnvWrapper, RslRlOnPolicyRunnerCfg
 from omni.isaac.lab_tasks.utils import get_checkpoint_path
 from rsl_rl.runners import OnPolicyRunner
