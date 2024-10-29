@@ -1,11 +1,11 @@
 from rclpy.node import Node
-from nav_msgs import Odometry
+from nav_msgs.msg import Odometry
 
 class RobotDataManager(Node):
-    def __init__(self, env):
-        super().__init__("data publisher manager")
+    def __init__(self, env, num_envs):
+        super().__init__("data_publisher_manager")
         self.env = env
-        self.num_envs = env.scene.num_envs
+        self.num_envs = num_envs
 
         self.odom_pub = []
         for i in range(self.num_envs):
@@ -19,7 +19,7 @@ class RobotDataManager(Node):
     def publish_odom(self, base_pos, base_rot, env_idx):
         odom_msg = Odometry()
         odom_msg.header.stamp = self.get_clock().now().to_msg()
-        odom_msg.header.frame_if = "map"
+        odom_msg.header.frame_id = "map"
         if (self.num_envs == 1):
             odom_msg.child_frame_id = "base_link"
         else:
