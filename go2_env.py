@@ -1,7 +1,7 @@
 from omni.isaac.lab.scene import InteractiveSceneCfg
 from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.sensors import RayCasterCfg, patterns
+from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 import omni.isaac.lab.sim as sim_utils
@@ -30,7 +30,9 @@ class Go2SimCfg(InteractiveSceneCfg):
 
     # Go2 Robot
     unitree_go2: ArticulationCfg = UNITREE_GO2_CFG.replace(prim_path="{ENV_REGEX_NS}/Go2")
-    
+
+    # Go2 foot contact sensor
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Go2/.*_foot", history_length=3, track_air_time=True)
 
     # Go2 height scanner
     height_scanner = RayCasterCfg(
@@ -47,7 +49,6 @@ class Go2SimCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the environment."""
     joint_pos = mdp.JointPositionActionCfg(asset_name="unitree_go2", joint_names=[".*"])
-
 
 @configclass
 class ObservationsCfg:
@@ -80,7 +81,7 @@ class ObservationsCfg:
                               clip=(-1.0, 1.0))
 
         def __post_init__(self) -> None:
-            self.enable_corruption = True
+            self.enable_corruption = False
             self.concatenate_terms = True
 
     # observation groups

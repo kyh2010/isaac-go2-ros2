@@ -3,10 +3,10 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped
 
 class RobotDataManager(Node):
-    def __init__(self, env, num_envs):
+    def __init__(self, env):
         super().__init__("data_publisher_manager")
         self.env = env
-        self.num_envs = num_envs
+        self.num_envs = env.unwrapped.scene.num_envs
 
         self.odom_pub = []
         self.pose_pub = []
