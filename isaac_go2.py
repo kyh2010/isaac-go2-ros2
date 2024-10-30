@@ -24,12 +24,12 @@ import omni
 import carb
 import go2_ctrl
 import go2_ros2_bridge
-from go2_env import Go2EnvCfg
+from go2_env import Go2RSLEnvCfg
 
 
 def run_simulator():
     # Environment setup
-    go2_env_cfg = Go2EnvCfg()
+    go2_env_cfg = Go2RSLEnvCfg()
     go2_env_cfg.scene.num_envs = args_cli.num_envs
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)

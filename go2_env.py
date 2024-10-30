@@ -114,7 +114,7 @@ class CurriculumCfg:
     pass
 
 @configclass
-class Go2EnvCfg(ManagerBasedEnvCfg):
+class Go2RSLEnvCfg(ManagerBasedEnvCfg):
     """Configuration for the Go2 environment."""
     # scene settings
     scene = Go2SimCfg(num_envs=2, env_spacing=2.0)

@@ -34,7 +34,7 @@ unitree_go2_flat_cfg = {
     'wandb_project': 'isaaclab',
     'resume': False,
     'load_run': 'unitree_go2',
-    'load_checkpoint': 'flat_model_8000.pt'
+    'load_checkpoint': 'flat_model_11200.pt'
 }
 
 unitree_go2_rough_cfg = {
