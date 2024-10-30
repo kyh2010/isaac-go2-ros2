@@ -32,8 +32,8 @@ def run_simulator():
     go2_env_cfg = Go2EnvCfg()
     go2_env_cfg.scene.num_envs = args_cli.num_envs
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
-    env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
-    # env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
+    # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
+    env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
 
     # Keyboard control
     system_input = carb.input.acquire_input_interface()

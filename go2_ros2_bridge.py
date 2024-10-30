@@ -22,7 +22,7 @@ class RobotDataManager(Node):
                 self.pose_pub.append(
                     self.create_publisher(PoseStamped, f"unitree_go2_{i}/pose", 10))
     
-    def publish_odom(self, base_pos, base_rot, env_idx):
+    def publish_odom(self, base_pos, base_rot, base_lin_vel_b, base_ang_vel_b, env_idx):
         odom_msg = Odometry()
         odom_msg.header.stamp = self.get_clock().now().to_msg()
         odom_msg.header.frame_id = "map"
@@ -37,6 +37,12 @@ class RobotDataManager(Node):
         odom_msg.pose.pose.orientation.y = base_rot[2].item()
         odom_msg.pose.pose.orientation.z = base_rot[3].item()
         odom_msg.pose.pose.orientation.w = base_rot[0].item()
+        odom_msg.twist.twist.linear.x = base_lin_vel_b[0].item()
+        odom_msg.twist.twist.linear.y = base_lin_vel_b[1].item()
+        odom_msg.twist.twist.linear.z = base_lin_vel_b[2].item()
+        odom_msg.twist.twist.angular.x = base_ang_vel_b[0].item()
+        odom_msg.twist.twist.angular.y = base_ang_vel_b[1].item()
+        odom_msg.twist.twist.angular.z = base_ang_vel_b[2].item()
         self.odom_pub[env_idx].publish(odom_msg)
     
     def publish_pose(self, base_pos, base_rot, env_idx):
@@ -54,8 +60,12 @@ class RobotDataManager(Node):
 
 
     def pub_ros2_data(self):
+        robot_data = self.env.unwrapped.scene["unitree_go2"].data
         for i in range(self.num_envs):
-            self.publish_odom(self.env.env.scene["unitree_go2"].data.root_state_w[i, :3],
-                              self.env.env.scene["unitree_go2"].data.root_state_w[i, 3:7], i)
-            self.publish_pose(self.env.env.scene["unitree_go2"].data.root_state_w[i, :3],
-                              self.env.env.scene["unitree_go2"].data.root_state_w[i, 3:7], i)
+            self.publish_odom(robot_data.root_state_w[i, :3],
+                              robot_data.root_state_w[i, 3:7],
+                              robot_data.root_lin_vel_b[i],
+                              robot_data.root_ang_vel_b[i],
+                              i)
+            self.publish_pose(robot_data.root_state_w[i, :3],
+                              robot_data.root_state_w[i, 3:7], i)
