@@ -1,26 +1,36 @@
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
+import go2_ctrl
 
 class RobotDataManager(Node):
     def __init__(self, env):
-        super().__init__("data_publisher_manager")
+        super().__init__("robot_data_manager")
         self.env = env
         self.num_envs = env.unwrapped.scene.num_envs
 
         self.odom_pub = []
         self.pose_pub = []
+        self.cmd_vel_sub = []
         for i in range(self.num_envs):
             if (self.num_envs == 1):
                 self.odom_pub.append(
                     self.create_publisher(Odometry, "unitree_go2/odom", 10))
                 self.pose_pub.append(
                     self.create_publisher(PoseStamped, "unitree_go2/pose", 10))
+                self.cmd_vel_sub.append(
+                    self.create_subscription(Twist, "unitree_go2/cmd_vel", 
+                    lambda msg: self.cmd_vel_callback(msg, 0), 10)
+                )
             else:
                 self.odom_pub.append(
                     self.create_publisher(Odometry, f"unitree_go2_{i}/odom", 10))
                 self.pose_pub.append(
                     self.create_publisher(PoseStamped, f"unitree_go2_{i}/pose", 10))
+                self.cmd_vel_sub.append(
+                    self.create_subscription(Twist, f"unitree_go2_{i}/cmd_vel", 
+                    lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
+                )
     
     def publish_odom(self, base_pos, base_rot, base_lin_vel_b, base_ang_vel_b, env_idx):
         odom_msg = Odometry()
@@ -69,3 +79,9 @@ class RobotDataManager(Node):
                               i)
             self.publish_pose(robot_data.root_state_w[i, :3],
                               robot_data.root_state_w[i, 3:7], i)
+
+    def cmd_vel_callback(self, msg, env_idx):
+        go2_ctrl.base_vel_cmd_input[env_idx][0] = msg.linear.x
+        go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
+        go2_ctrl.base_vel_cmd_input[env_idx][2] = msg.angular.z
+            

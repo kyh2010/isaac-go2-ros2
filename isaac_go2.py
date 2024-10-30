@@ -25,6 +25,7 @@ import carb
 import go2_ctrl
 import go2_ros2_bridge
 from go2_env import Go2RSLEnvCfg
+import threading
 
 
 def run_simulator():
@@ -43,6 +44,8 @@ def run_simulator():
     # ROS2 Bridge
     rclpy.init()
     dm = go2_ros2_bridge.RobotDataManager(env)
+    thread = threading.Thread(target=rclpy.spin, args=(dm,), daemon=True)
+    thread.start()    
 
     # Run simulation
     obs, _ = env.reset()
