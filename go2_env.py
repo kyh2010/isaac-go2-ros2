@@ -12,6 +12,7 @@ from omni.isaac.lab.envs import ManagerBasedEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 import go2_ctrl
+import go2_sensors
 
 
 @configclass

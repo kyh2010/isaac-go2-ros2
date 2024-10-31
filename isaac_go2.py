@@ -1,5 +1,5 @@
 import argparse
-
+from isaacsim import SimulationApp
 from omni.isaac.lab.app import AppLauncher
 
 # add argparse arguments
@@ -10,13 +10,15 @@ parser.add_argument("--height", type=int, default=1080, help="Resolution Height.
 parser.add_argument("--width", type=int, default=1920, help="Resolution Width.")
 
 # append AppLauncher cli args
-AppLauncher.add_app_launcher_args(parser)
+# AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
 args_cli = parser.parse_args()
 
 # launch omniverse app
-app_launcher = AppLauncher(args_cli)
-simulation_app = app_launcher.app
+# app_launcher = AppLauncher(args_cli)
+# simulation_app = app_launcher.app
+simulation_app = SimulationApp({"headless": False})
+
 
 import rclpy
 import torch
@@ -25,8 +27,8 @@ import carb
 import go2_ctrl
 import go2_ros2_bridge
 from go2_env import Go2RSLEnvCfg
+import go2_sensors
 import threading
-
 
 def run_simulator():
     # Environment setup
@@ -35,6 +37,7 @@ def run_simulator():
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
+    go2_sensors.add_rtx_lidar(args_cli.num_envs)
 
     # Keyboard control
     system_input = carb.input.acquire_input_interface()
