@@ -1,7 +1,7 @@
 from omni.isaac.lab.scene import InteractiveSceneCfg
 from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
+from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg, CameraCfg
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 import omni.isaac.lab.sim as sim_utils
@@ -43,7 +43,6 @@ class Go2SimCfg(InteractiveSceneCfg):
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
-
 
 @configclass
 class ActionsCfg:

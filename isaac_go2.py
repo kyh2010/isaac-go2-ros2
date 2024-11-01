@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description="This script demonstrates different
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to spawn.")
 args_cli = parser.parse_args()
 
-# launch omniverse app
+# # launch omniverse app
 simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0})
 
 
@@ -38,10 +38,14 @@ def run_simulator():
     go2_env_cfg = Go2RSLEnvCfg()
     go2_env_cfg.scene.num_envs = args_cli.num_envs
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
-    sim_step_dt = go2_env_cfg.sim.dt * go2_env_cfg.decimation
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
-    lidar_annotators = go2_sensors.add_rtx_lidar(args_cli.num_envs)
+
+
+    # Sensor setup
+    sm = go2_sensors.SensorManager(args_cli.num_envs)
+    lidar_annotators = sm.add_rtx_lidar()
+    cameras = sm.add_camera()
 
     # Keyboard control
     system_input = carb.input.acquire_input_interface()
@@ -50,9 +54,10 @@ def run_simulator():
     
     # ROS2 Bridge
     rclpy.init()
-    dm = go2_ros2_bridge.RobotDataManager(env, lidar_annotators)
+    dm = go2_ros2_bridge.RobotDataManager(env, lidar_annotators, cameras)
 
     # Run simulation
+    sim_step_dt = go2_env_cfg.sim.dt * go2_env_cfg.decimation
     obs, _ = env.reset()
     while simulation_app.is_running():
         start_time = time.time()
