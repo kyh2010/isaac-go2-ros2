@@ -8,7 +8,7 @@ import omni.isaac.lab.sim as sim_utils
 import omni.isaac.lab.envs.mdp as mdp
 from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
 from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
-from omni.isaac.lab.envs import ManagerBasedEnvCfg
+from omni.isaac.lab.envs import ManagerBasedRLEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 import go2_ctrl
@@ -114,7 +114,7 @@ class CurriculumCfg:
     pass
 
 @configclass
-class Go2RSLEnvCfg(ManagerBasedEnvCfg):
+class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the Go2 environment."""
     # scene settings
     scene = Go2SimCfg(num_envs=2, env_spacing=2.0)

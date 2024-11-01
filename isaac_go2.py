@@ -1,22 +1,12 @@
 import argparse
 from isaacsim import SimulationApp
-from omni.isaac.lab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="This script demonstrates different legged robots.")
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to spawn.")
-parser.add_argument("--anti_aliasing", type=int, default=0, help="Anti Aliasing.")
-parser.add_argument("--height", type=int, default=1080, help="Resolution Height.")
-parser.add_argument("--width", type=int, default=1920, help="Resolution Width.")
-
-# append AppLauncher cli args
-# AppLauncher.add_app_launcher_args(parser)
-# parse the arguments
 args_cli = parser.parse_args()
 
 # launch omniverse app
-# app_launcher = AppLauncher(args_cli)
-# simulation_app = app_launcher.app
 simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0})
 
 
@@ -28,7 +18,6 @@ import go2_ctrl
 import go2_ros2_bridge
 from go2_env import Go2RSLEnvCfg
 import go2_sensors
-import threading
 import time
 
 def run_simulator():
@@ -62,8 +51,6 @@ def run_simulator():
     # ROS2 Bridge
     rclpy.init()
     dm = go2_ros2_bridge.RobotDataManager(env, lidar_annotators)
-    thread = threading.Thread(target=rclpy.spin, args=(dm,), daemon=True)
-    thread.start()    
 
     # Run simulation
     obs, _ = env.reset()
@@ -76,16 +63,14 @@ def run_simulator():
             # step the environment
             obs, _, _, _ = env.step(actions)
 
-            # publish to ROS2
-            dm.pub_ros2_data()
-
-            end_time = time.time()
-            elapsed_time = end_time - start_time
+            # limit loop time
+            elapsed_time = time.time() - start_time
             if elapsed_time < sim_step_dt:
                 sleep_duration = sim_step_dt - elapsed_time
                 time.sleep(sleep_duration)
-        actual_loop_time = time.time() - start_time
-        print("actual_loop_time: ", actual_loop_time)
+        rclpy.spin_once(dm)
+        # actual_loop_time = time.time() - start_time
+        # print("actual_loop_time: ", actual_loop_time)
 
 
 if __name__ == "__main__":
