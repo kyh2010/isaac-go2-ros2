@@ -33,17 +33,11 @@ class RobotDataManager(Node):
         self.odom_pub = []
         self.pose_pub = []
         self.lidar_pub = []
-        self.color_img_pub = []
-        self.depth_img_pub = []
-        self.cam_depth_cloud_pub = []
 
         # ROS2 Subscriber
         self.cmd_vel_sub = []
         self.color_img_sub = []
         self.depth_img_sub = []
-        self.color_img_sub = []
-        self.depth_img_sub = []
-        self.cam_depth_cloud_sub = []
 
         # ROS2 Timer
         self.lidar_publish_timer = []
@@ -56,30 +50,9 @@ class RobotDataManager(Node):
                 self.lidar_pub.append(
                     self.create_publisher(PointCloud2, "unitree_go2/lidar/point_cloud", 10)
                 )
-                self.color_img_pub.append(
-                    self.create_publisher(Image, "unitree_go2/front_cam/color_image", 10)
-                )
-                self.depth_img_pub.append(
-                    self.create_publisher(Image, "unitree_go2/front_cam/depth_image", 10)
-                )
-                self.cam_depth_cloud_pub.append(
-                    self.create_publisher(PointCloud2, "unitree_go2/front_cam/depth_cloud", 10)
-                )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, "unitree_go2/cmd_vel", 
                     lambda msg: self.cmd_vel_callback(msg, 0), 10)
-                )
-                self.color_img_sub.append(
-                    self.create_subscription(Image, "unitree_go2/front_cam/color_image_raw", 
-                    lambda msg: self.color_image_callback(msg, 0), 10)
-                )
-                self.depth_img_sub.append(
-                    self.create_subscription(Image, "unitree_go2/front_cam/depth_image_raw", 
-                    lambda msg: self.depth_image_callback(msg, 0), 10)
-                )
-                self.cam_depth_cloud_sub.append(
-                    self.create_subscription(PointCloud2, "unitree_go2/front_cam/depth_cloud_raw", 
-                    lambda msg: self.cam_depth_cloud_callback(msg, 0), 10)
                 )
             else:
                 self.odom_pub.append(
@@ -89,30 +62,9 @@ class RobotDataManager(Node):
                 self.lidar_pub.append(
                     self.create_publisher(PointCloud2, f"unitree_go2_{i}/lidar/point_cloud", 10)
                 )
-                self.color_img_pub.append(
-                    self.create_publisher(Image, f"unitree_go2_{i}/front_cam/color_image", 10)
-                )
-                self.depth_img_pub.append(
-                    self.create_publisher(Image, f"unitree_go2_{i}/front_cam/depth_image", 10)
-                )
-                self.cam_depth_cloud_pub.append(
-                    self.create_publisher(PointCloud2, f"unitree_go2_{i}/front_cam/depth_cloud", 10)
-                )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, f"unitree_go2_{i}/cmd_vel", 
                     lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
-                )
-                self.color_img_sub.append(
-                    self.create_subscription(Image, "unitree_go2/front_cam/color_image_raw", 
-                    lambda msg, env_idx=i: self.color_image_callback(msg, env_idx), 10)
-                )
-                self.depth_img_sub.append(
-                    self.create_subscription(Image, "unitree_go2/front_cam/depth_image_raw", 
-                    lambda msg, env_idx=i: self.depth_image_callback(msg, env_idx), 10)
-                )
-                self.cam_depth_cloud_sub.append(
-                    self.create_subscription(PointCloud2, f"unitree_go2_{i}/front_cam/depth_cloud_raw", 
-                    lambda msg, env_idx=i: self.cam_depth_cloud_callback(msg, env_idx), 10)
                 )
         
         self.create_timer(0.033, self.pub_ros2_data_callback)
@@ -269,80 +221,6 @@ class RobotDataManager(Node):
         go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
         go2_ctrl.base_vel_cmd_input[env_idx][2] = msg.angular.z
 
-    def color_image_callback(self, msg, env_idx):
-        msg.header.stamp = self.get_clock().now().to_msg()
-        if (self.num_envs == 1):
-            msg.header.frame_id = "unitree_go2/front_cam"
-        else:
-            msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"     
-        self.color_img_pub[env_idx].publish(msg)   
-        # # Update timestamp and frame ID in header
-        # new_msg = Image()
-        # new_msg.header.stamp = self.get_clock().now().to_msg()
-        # if (self.num_envs == 1):
-        #     new_msg.header.frame_id = "unitree_go2/front_cam"
-        # else:
-        #     new_msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"
-
-        # # Copy other message fields
-        # new_msg.height = msg.height
-        # new_msg.width = msg.width
-        # new_msg.encoding = msg.encoding
-        # new_msg.is_bigendian = msg.is_bigendian
-        # new_msg.step = msg.step
-        # new_msg.data = msg.data
-        # self.color_img_pub[env_idx].publish(new_msg)
-
-    def depth_image_callback(self, msg, env_idx):
-        msg.header.stamp = self.get_clock().now().to_msg()
-        if (self.num_envs == 1):
-            msg.header.frame_id = "unitree_go2/front_cam"
-        else:
-            msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"     
-        self.depth_img_pub[env_idx].publish(msg)   
-        # Update timestamp and frame ID in header
-        # new_msg = Image()
-        # new_msg.header.stamp = self.get_clock().now().to_msg()
-        # if (self.num_envs == 1):
-        #     new_msg.header.frame_id = "unitree_go2/front_cam"
-        # else:
-        #     new_msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"
-
-        # # Copy other message fields
-        # new_msg.height = msg.height
-        # new_msg.width = msg.width
-        # new_msg.encoding = msg.encoding
-        # new_msg.is_bigendian = msg.is_bigendian
-        # new_msg.step = msg.step
-        # new_msg.data = msg.data
-        # self.depth_img_pub[env_idx].publish(new_msg)
-
-    def cam_depth_cloud_callback(self, msg, env_idx):
-        msg.header.stamp = self.get_clock().now().to_msg()
-        if (self.num_envs == 1):
-            msg.header.frame_id = "unitree_go2/front_cam"
-        else:
-            msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"     
-        self.cam_depth_cloud_pub[env_idx].publish(msg)   
-        # Modify the timestamp and frame_id
-        # new_msg = PointCloud2()
-        # new_msg.header.stamp = self.get_clock().now().to_msg()  
-        # if (self.num_envs == 1):
-        #     new_msg.header.frame_id = "unitree_go2/front_cam"
-        # else:
-        #     new_msg.header.frame_id = f"unitree_go2_{env_idx}/front_cam"
-        # # Copy the rest of the fields from the original message
-        # new_msg.height = msg.height
-        # new_msg.width = msg.width
-        # new_msg.fields = msg.fields
-        # new_msg.is_bigendian = msg.is_bigendian
-        # new_msg.point_step = msg.point_step
-        # new_msg.row_step = msg.row_step
-        # new_msg.is_dense = msg.is_dense
-        # new_msg.data = msg.data
-
-        # # Publish the modified message
-        # self.cam_depth_cloud_pub[env_idx].publish(new_msg)        
 
     def pub_color_image(self):
         for i in range(self.num_envs):
@@ -350,13 +228,14 @@ class RobotDataManager(Node):
             render_product = self.cameras[i]._render_product_path
             freq = 30
             step_size = int(60/freq)
-            topic_name = "/front_cam/color_image_raw"
             if (self.num_envs == 1):
-                node_namespace = "unitree_go2"                
+                topic_name = "unitree_go2/front_cam/color_image"
+                frame_id = "unitree_go2/front_cam"                         
             else:
-                node_namespace = f"unitree_go2_{i}"            
+                topic_name = f"unitree_go2_{i}/front_cam/color_image"
+                frame_id = f"unitree_go2_{i}/front_cam"
+            node_namespace = ""         
             queue_size = 1
-            frame_id = self.cameras[i].prim_path.split("/")[-1] + f"_color_{i}" # This matches what the TF tree is publishing.
 
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
             
@@ -381,13 +260,14 @@ class RobotDataManager(Node):
             render_product = self.cameras[i]._render_product_path
             freq = 30 # TODO: 
             step_size = int(60/freq)
-            topic_name = "/front_cam/depth_image_raw"
             if (self.num_envs == 1):
-                node_namespace = "unitree_go2"                
+                topic_name = "unitree_go2/front_cam/depth_image"                
+                frame_id = "unitree_go2/front_cam"          
             else:
-                node_namespace = f"unitree_go2_{i}"
+                topic_name = f"unitree_go2_{i}/front_cam/depth_image"
+                frame_id = f"unitree_go2_{i}/front_cam"
+            node_namespace = ""
             queue_size = 1
-            frame_id = self.cameras[i].prim_path.split("/")[-1] + f"_depth_{i}" # This matches what the TF tree is publishing.
 
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                                     sd.SensorType.DistanceToImagePlane.name
@@ -414,13 +294,14 @@ class RobotDataManager(Node):
             render_product = self.cameras[i]._render_product_path
             freq = 30
             step_size = int(60/freq)
-            topic_name = "/front_cam/depth_cloud_raw"
             if (self.num_envs == 1):
-                node_namespace = "unitree_go2"                
+                topic_name = "unitree_go2/front_cam/depth_cloud"    
+                frame_id = "unitree_go2/front_cam"          
             else:
-                node_namespace = f"unitree_go2_{i}"            
+                topic_name = f"unitree_go2_{i}/front_cam/depth_cloud"
+                frame_id = f"unitree_go2_{i}/front_cam"
+            node_namespace = ""         
             queue_size = 1
-            frame_id = self.cameras[i].prim_path.split("/")[-1] + f"_depth_cloud_{i}"  # This matches what the TF tree is publishing.
 
             # Note, this pointcloud publisher will simply convert the Depth image to a pointcloud using the Camera intrinsics.
             # This pointcloud generation method does not support semantic labelled objects.
