@@ -1,7 +1,6 @@
 import omni
 from pxr import Gf
 import omni.replicator.core as rep
-from omni.isaac.core.utils.extensions import enable_extension
 
 def add_rtx_lidar(num_envs):
     lidar_annotators = []
