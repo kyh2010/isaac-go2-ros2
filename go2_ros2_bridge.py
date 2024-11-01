@@ -1,26 +1,38 @@
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Twist
+from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs_py import point_cloud2
 import go2_ctrl
 
 class RobotDataManager(Node):
-    def __init__(self, env):
+    def __init__(self, env, lidar_annotators):
         super().__init__("robot_data_manager")
         self.env = env
         self.num_envs = env.unwrapped.scene.num_envs
+        self.lidar_annotators = lidar_annotators
+        self.points = []
 
         self.odom_pub = []
         self.pose_pub = []
+        self.lidar_pub = []
         self.cmd_vel_sub = []
+        self.lidar_publish_timer = []
         for i in range(self.num_envs):
             if (self.num_envs == 1):
                 self.odom_pub.append(
                     self.create_publisher(Odometry, "unitree_go2/odom", 10))
                 self.pose_pub.append(
                     self.create_publisher(PoseStamped, "unitree_go2/pose", 10))
+                self.lidar_pub.append(
+                    self.create_publisher(PointCloud2, "unitree_go2/point_cloud", 1)
+                )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, "unitree_go2/cmd_vel", 
                     lambda msg: self.cmd_vel_callback(msg, 0), 10)
+                )
+                self.lidar_publish_timer.append(
+                    self.create_timer(0.1, lambda env_idx=i:self.lidar_pub_callback(env_idx))
                 )
             else:
                 self.odom_pub.append(
@@ -31,7 +43,8 @@ class RobotDataManager(Node):
                     self.create_subscription(Twist, f"unitree_go2_{i}/cmd_vel", 
                     lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
                 )
-    
+        
+
     def publish_odom(self, base_pos, base_rot, base_lin_vel_b, base_ang_vel_b, env_idx):
         odom_msg = Odometry()
         odom_msg.header.stamp = self.get_clock().now().to_msg()
@@ -69,6 +82,17 @@ class RobotDataManager(Node):
         self.pose_pub[env_idx].publish(pose_msg)
 
 
+    def publish_lidar(self, points, env_idx):
+        point_cloud = PointCloud2()
+        point_cloud.header.frame_id = "map"
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+        ]
+        point_cloud = point_cloud2.create_cloud(point_cloud.header, fields, points)
+        self.lidar_pub[env_idx].publish(point_cloud)        
+
     def pub_ros2_data(self):
         robot_data = self.env.unwrapped.scene["unitree_go2"].data
         for i in range(self.num_envs):
@@ -79,9 +103,14 @@ class RobotDataManager(Node):
                               i)
             self.publish_pose(robot_data.root_state_w[i, :3],
                               robot_data.root_state_w[i, 3:7], i)
+            
 
     def cmd_vel_callback(self, msg, env_idx):
         go2_ctrl.base_vel_cmd_input[env_idx][0] = msg.linear.x
         go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
         go2_ctrl.base_vel_cmd_input[env_idx][2] = msg.angular.z
-            
+    
+    def lidar_pub_callback(self, env_idx):
+        self.points = self.lidar_annotators[env_idx].get_data()["data"].reshape(-1, 3)
+        if (len(self.points) != 0):    
+            self.publish_lidar(self.points, env_idx)  

@@ -12,7 +12,6 @@ from omni.isaac.lab.envs import ManagerBasedEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 import go2_ctrl
-import go2_sensors
 
 
 @configclass
@@ -138,12 +137,18 @@ class Go2RSLEnvCfg(ManagerBasedEnvCfg):
         self.viewer.lookat = [0.0, 0.0, 0.0]
 
         # step settings
-        self.decimation = 4  # env step every 4 sim steps: 200Hz / 4 = 50Hz
+        self.decimation = 4  # 50 hz step: 4*0.005
 
         # simulation settings
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
-        
+        self.sim.render_interval = 4 # 
+        self.sim.disable_contact_processing = True
+        self.sim.physics_material = self.scene.terrain.physics_material
+
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored
         self.is_finite_horizon = False
         self.actions.joint_pos.scale = 0.25
+
+        if self.scene.height_scanner is not None:
+            self.scene.height_scanner.update_period = self.decimation * self.sim.dt
