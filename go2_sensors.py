@@ -13,7 +13,6 @@ def add_rtx_lidar(num_envs):
             # config="Velodyne_VLS128",
             translation=(0.23, 0, 0.2),
             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-            visibility=True
         )
 
         annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")

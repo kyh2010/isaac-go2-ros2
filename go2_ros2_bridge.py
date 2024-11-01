@@ -1,8 +1,10 @@
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, Twist, TransformStamped
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
+from tf2_ros import TransformBroadcaster
+from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 import go2_ctrl
 
 class RobotDataManager(Node):
@@ -13,6 +15,8 @@ class RobotDataManager(Node):
         self.lidar_annotators = lidar_annotators
         self.points = []
 
+        self.broadcaster= TransformBroadcaster(self)
+        self.static_broadcaster = StaticTransformBroadcaster(self)
         self.odom_pub = []
         self.pose_pub = []
         self.lidar_pub = []
@@ -43,8 +47,36 @@ class RobotDataManager(Node):
                     self.create_subscription(Twist, f"unitree_go2_{i}/cmd_vel", 
                     lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
                 )
+        
         self.create_timer(0.033, self.pub_ros2_data_callback)
         self.create_timer(0.1, self.pub_lidar_data_callback)
+        self.create_static_transform()
+
+    def create_static_transform(self):
+        for i in range(self.num_envs):
+            # Create and publish the transform
+            base_lidar_transform = TransformStamped()
+            base_lidar_transform.header.stamp = self.get_clock().now().to_msg()
+            if (self.num_envs == 1):
+                base_lidar_transform.header.frame_id = f"unitree_go2/base_link"
+                base_lidar_transform.child_frame_id = f"unitree_go2/lidar_frame"
+            else:
+                base_lidar_transform.header.frame_id = f"unitree_go2_{i}/base_link"
+                base_lidar_transform.child_frame_id = f"unitree_go2_{i}/lidar_frame"
+
+            # Translation
+            base_lidar_transform.transform.translation.x = 0.23
+            base_lidar_transform.transform.translation.y = 0.0
+            base_lidar_transform.transform.translation.z = 0.2
+            
+            # Rotation 
+            base_lidar_transform.transform.rotation.x = 0.0
+            base_lidar_transform.transform.rotation.y = 0.0
+            base_lidar_transform.transform.rotation.z = 0.0
+            base_lidar_transform.transform.rotation.w = 1.0
+            
+            # Publish the transform
+            self.static_broadcaster.sendTransform(base_lidar_transform)
 
     def publish_odom(self, base_pos, base_rot, base_lin_vel_b, base_ang_vel_b, env_idx):
         odom_msg = Odometry()
@@ -68,6 +100,24 @@ class RobotDataManager(Node):
         odom_msg.twist.twist.angular.y = base_ang_vel_b[1].item()
         odom_msg.twist.twist.angular.z = base_ang_vel_b[2].item()
         self.odom_pub[env_idx].publish(odom_msg)
+
+
+        # transform
+        map_base_trans = TransformStamped()
+        map_base_trans.header.stamp = self.get_clock().now().to_msg()
+        map_base_trans.header.frame_id = "map"
+        if (self.num_envs == 1):
+            map_base_trans.child_frame_id = f"unitree_go2/base_link"
+        else:
+            map_base_trans.child_frame_id = f"unitree_go2_{env_idx}/base_link"
+        map_base_trans.transform.translation.x = base_pos[0].item()
+        map_base_trans.transform.translation.y = base_pos[1].item()
+        map_base_trans.transform.translation.z = base_pos[2].item()
+        map_base_trans.transform.rotation.x = base_rot[1].item()
+        map_base_trans.transform.rotation.y = base_rot[2].item()
+        map_base_trans.transform.rotation.z = base_rot[3].item()
+        map_base_trans.transform.rotation.w = base_rot[0].item()
+        self.broadcaster.sendTransform(map_base_trans)
     
     def publish_pose(self, base_pos, base_rot, env_idx):
         pose_msg = PoseStamped()
