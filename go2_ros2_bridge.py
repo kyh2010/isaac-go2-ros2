@@ -11,7 +11,6 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
 import subprocess
 import go2_ctrl
 
