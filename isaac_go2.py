@@ -76,8 +76,8 @@ def run_simulator():
                 sleep_duration = sim_step_dt - elapsed_time
                 time.sleep(sleep_duration)
         
-        actual_loop_time = time.time() - start_time
-        print("actual_loop_time: ", actual_loop_time)
+        # actual_loop_time = time.time() - start_time
+        # print("actual_loop_time: ", actual_loop_time)
 
 
 if __name__ == "__main__":
