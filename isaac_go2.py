@@ -41,7 +41,6 @@ def run_simulator():
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
 
-
     # Sensor setup
     sm = go2_sensors.SensorManager(args_cli.num_envs)
     lidar_annotators = sm.add_rtx_lidar()
@@ -68,12 +67,15 @@ def run_simulator():
             # step the environment
             obs, _, _, _ = env.step(actions)
 
+            # ROS2 data
+            rclpy.spin_once(dm)
+
             # limit loop time
             elapsed_time = time.time() - start_time
             if elapsed_time < sim_step_dt:
                 sleep_duration = sim_step_dt - elapsed_time
                 time.sleep(sleep_duration)
-        rclpy.spin_once(dm)
+        
         actual_loop_time = time.time() - start_time
         print("actual_loop_time: ", actual_loop_time)
 
