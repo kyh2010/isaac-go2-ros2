@@ -11,3 +11,10 @@ Please run:
 conda install -c conda-forge libstdcxx-ng
 ```
 reference: [link](https://stackoverflow.com/questions/58424974/anaconda-importerror-usr-lib64-libstdc-so-6-version-glibcxx-3-4-21-not-fo)
+
+
+## TODO:
+1. camera parameters
+2. camera frequency
+3. camera's error
+3. all other topics frequency
