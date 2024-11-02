@@ -1,3 +1,4 @@
+import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Twist, TransformStamped
@@ -11,6 +12,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
+import subprocess
 import go2_ctrl
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -20,12 +22,17 @@ ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 class RobotDataManager(Node):
     def __init__(self, env, lidar_annotators, cameras):
         super().__init__("robot_data_manager")
+        self.create_ros_time_graph()
+        sim_time_set = False
+        while (rclpy.ok() and sim_time_set==False):
+            sim_time_set = self.use_sim_time()
+
         self.env = env
         self.num_envs = env.unwrapped.scene.num_envs
         self.lidar_annotators = lidar_annotators
         self.cameras = cameras
         self.points = []
-
+        
         # ROS2 Broadcaster
         self.broadcaster= TransformBroadcaster(self)
         
@@ -71,7 +78,38 @@ class RobotDataManager(Node):
         self.create_timer(0.1, self.pub_lidar_data_callback)
         self.create_static_transform()
         self.create_camera_publisher()
-        
+    
+    def create_ros_time_graph(self):
+        # Generate an action graph
+        ros_clock_graph = "/ClockGraph"
+
+        if not is_prim_path_valid(ros_clock_graph):
+            (_, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": ros_clock_graph,
+                    "evaluator_name": "execution",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+                },
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("RosPublisher", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
+                        ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
+                    ]
+                }
+            )
+
+    def use_sim_time(self):
+        # Define the command as a list
+        command = ["ros2", "param", "set", "/robot_data_manager", "use_sim_time", "true"]
+
+        # Run the command in a non-blocking way
+        subprocess.Popen(command)  
+        return True
 
     def create_static_transform(self):
         for i in range(self.num_envs):
@@ -106,7 +144,7 @@ class RobotDataManager(Node):
             # Create and publish the transform
             camera_broadcaster = StaticTransformBroadcaster(self)
             base_cam_transform = TransformStamped()
-            base_cam_transform.header.stamp = self.get_clock().now().to_msg()
+            # base_cam_transform.header.stamp = self.get_clock().now().to_msg()
             if (self.num_envs == 1):
                 base_cam_transform.header.frame_id = "unitree_go2/base_link"
                 base_cam_transform.child_frame_id = "unitree_go2/front_cam"
@@ -314,7 +352,7 @@ class RobotDataManager(Node):
                 frameId=frame_id,
                 nodeNamespace=node_namespace,
                 queueSize=queue_size,
-                topicName=topic_name
+                topicName=topic_name,
             )
             writer.attach([render_product])
 
