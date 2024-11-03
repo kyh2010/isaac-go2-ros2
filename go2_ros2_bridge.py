@@ -79,28 +79,29 @@ class RobotDataManager(Node):
         self.create_camera_publisher()
     
     def create_ros_time_graph(self):
-        # Generate an action graph
-        ros_clock_graph = "/ClockGraph"
-
-        if not is_prim_path_valid(ros_clock_graph):
-            (_, _, _, _) = og.Controller.edit(
-                {
-                    "graph_path": ros_clock_graph,
-                    "evaluator_name": "execution",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
-                },
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnTick", "omni.graph.action.OnTick"),
-                        ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                        ("RosPublisher", "omni.isaac.ros2_bridge.ROS2PublishClock"),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
-                        ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
-                    ]
-                }
-            )
+        og.Controller.edit(
+            {"graph_path": "/ClockGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                    ("OnPlayBack", "omni.graph.action.OnPlaybackTick"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    # Connecting execution of OnImpulseEvent node to PublishClock so it will only publish when an impulse event is triggered
+                    ("OnPlayBack.outputs:tick", "PublishClock.inputs:execIn"),
+                    # Connecting simulationTime data of ReadSimTime to the clock publisher node
+                    ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+                    # Connecting the ROS2 Context to the clock publisher node so it will run under the specified ROS2 Domain ID
+                    ("Context.outputs:context", "PublishClock.inputs:context"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    # Assigning topic name to clock publisher
+                    ("PublishClock.inputs:topicName", "/clock"),
+                ],
+            },
+        )
 
     def use_sim_time(self):
         # Define the command as a list
