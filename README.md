@@ -14,7 +14,5 @@ reference: [link](https://stackoverflow.com/questions/58424974/anaconda-importer
 
 
 ## TODO:
-1. camera parameters
-2. camera frequency
-3. camera's error
-3. all other topics frequency
+1. Use graph to replace all the current modules
+4. Environment (todo)
