@@ -7,8 +7,9 @@ parser.add_argument("--num_envs", type=int, default=1, help="Number of environme
 args_cli = parser.parse_args()
 
 # # launch omniverse app
-simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0})
-
+simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0,
+                                "width": 1280, "height": 720, 
+                                "hide_ui": False})
 
 import rclpy
 import torch
@@ -67,7 +68,7 @@ def run_simulator():
             # step the environment
             obs, _, _, _ = env.step(actions)
 
-            # ROS2 data
+            # # ROS2 data
             rclpy.spin_once(dm)
 
             # limit loop time

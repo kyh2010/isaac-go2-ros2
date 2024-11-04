@@ -10,7 +10,6 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
-from omni.isaac.core.utils.prims import is_prim_path_valid
 import subprocess
 import go2_ctrl
 
@@ -21,10 +20,10 @@ ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 class RobotDataManager(Node):
     def __init__(self, env, lidar_annotators, cameras):
         super().__init__("robot_data_manager")
-        self.create_ros_time_graph()
-        sim_time_set = False
-        while (rclpy.ok() and sim_time_set==False):
-            sim_time_set = self.use_sim_time()
+        # self.create_ros_time_graph()
+        # sim_time_set = False
+        # while (rclpy.ok() and sim_time_set==False):
+        #     sim_time_set = self.use_sim_time()
 
         self.env = env
         self.num_envs = env.unwrapped.scene.num_envs
@@ -76,8 +75,9 @@ class RobotDataManager(Node):
         self.create_timer(0.033, self.pub_ros2_data_callback)
         self.create_timer(0.1, self.pub_lidar_data_callback)
         self.create_static_transform()
-        self.create_camera_publisher()
-    
+        self.create_camera_publisher()  
+
+ 
     def create_ros_time_graph(self):
         og.Controller.edit(
             {"graph_path": "/ClockGraph", "evaluator_name": "execution"},
@@ -167,8 +167,9 @@ class RobotDataManager(Node):
             camera_broadcaster.sendTransform(base_cam_transform)
     
     def create_camera_publisher(self):
-        self.pub_color_image()
-        self.pub_depth_image()
+        self.pub_image_graph()
+        # self.pub_color_image()
+        # self.pub_depth_image()
         # self.pub_cam_depth_cloud()
         self.publish_camera_info()
     
@@ -260,6 +261,70 @@ class RobotDataManager(Node):
         go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
         go2_ctrl.base_vel_cmd_input[env_idx][2] = msg.angular.z
 
+    def pub_image_graph(self):
+        for i in range(self.num_envs):
+            if (self.num_envs == 1):
+                color_topic_name = "unitree_go2/front_cam/color_image"
+                depth_topic_name = "unitree_go2/front_cam/depth_image"
+                # depth_cloud_topic_name = "unitree_go2/front_cam/depth_cloud"
+                frame_id = "unitree_go2/front_cam"                         
+            else:
+                color_topic_name = f"unitree_go2_{i}/front_cam/color_image"
+                depth_topic_name = f"unitree_go2_{i}/front_cam/depth_image"
+                # depth_cloud_topic_name = f"unitree_go2_{i}/front_cam/depth_cloud"
+                frame_id = f"unitree_go2_{i}/front_cam"
+            keys = og.Controller.Keys
+            og.Controller.edit(
+                {
+                    "graph_path": "/CameraROS2Graph",
+                    "evaluator_name": "execution",
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("IsaacCreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                        ("ROS2CameraHelperColor", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("ROS2CameraHelperDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("ROS2CameraHelperDepthCloud", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ],
+
+                    keys.SET_VALUES: [
+                        ("IsaacCreateRenderProduct.inputs:cameraPrim", f"/World/envs/env_{i}/Go2/base/front_cam"),
+                        ("IsaacCreateRenderProduct.inputs:enabled", True),
+                        ("IsaacCreateRenderProduct.inputs:height", 480),
+                        ("IsaacCreateRenderProduct.inputs:width", 640),
+                        
+                        # color camera
+                        ("ROS2CameraHelperColor.inputs:type", "rgb"),
+                        ("ROS2CameraHelperColor.inputs:topicName", color_topic_name),
+                        ("ROS2CameraHelperColor.inputs:frameId", frame_id),
+                        ("ROS2CameraHelperColor.inputs:useSystemTime", True),
+
+                        # depth camera
+                        ("ROS2CameraHelperDepth.inputs:type", "depth"),
+                        ("ROS2CameraHelperDepth.inputs:topicName", depth_topic_name),
+                        ("ROS2CameraHelperDepth.inputs:frameId", frame_id),
+                        ("ROS2CameraHelperDepth.inputs:useSystemTime", True),
+
+                        # depth camera cloud
+                        # ("ROS2CameraHelperDepthCloud.inputs:type", "depth_pcl"),
+                        # ("ROS2CameraHelperDepthCloud.inputs:topicName", depth_cloud_topic_name),
+                        # ("ROS2CameraHelperDepthCloud.inputs:frameId", frame_id),
+                        # ("ROS2CameraHelperDepthCloud.inputs:useSystemTime", True),
+                    ],
+
+                    keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "IsaacCreateRenderProduct.inputs:execIn"),
+                        ("IsaacCreateRenderProduct.outputs:execOut", "ROS2CameraHelperColor.inputs:execIn"),
+                        ("IsaacCreateRenderProduct.outputs:renderProductPath", "ROS2CameraHelperColor.inputs:renderProductPath"),
+                        ("IsaacCreateRenderProduct.outputs:execOut", "ROS2CameraHelperDepth.inputs:execIn"),
+                        ("IsaacCreateRenderProduct.outputs:renderProductPath", "ROS2CameraHelperDepth.inputs:renderProductPath"),
+                        # ("IsaacCreateRenderProduct.outputs:execOut", "ROS2CameraHelperDepthCloud.inputs:execIn"),
+                        # ("IsaacCreateRenderProduct.outputs:renderProductPath", "ROS2CameraHelperDepthCloud.inputs:renderProductPath"),
+                    ],
+
+                },
+            )
 
     def pub_color_image(self):
         for i in range(self.num_envs):
