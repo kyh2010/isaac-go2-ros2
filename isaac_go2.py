@@ -22,18 +22,18 @@ import go2_sensors
 import time
 
 def run_simulator():
-    from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-    from omni.isaac.nucleus import get_assets_root_path
+    # from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+    # from omni.isaac.nucleus import get_assets_root_path
 
-    assets_root_path = get_assets_root_path()
-    if assets_root_path is None:
-        carb.log_error("Could not find Isaac Sim assets folder")
+    # assets_root_path = get_assets_root_path()
+    # if assets_root_path is None:
+    #     carb.log_error("Could not find Isaac Sim assets folder")
 
-    prim = get_prim_at_path("/World/Warehouse")
-    if not prim.IsValid():
-        prim = define_prim("/World/Warehouse", "Xform")
-        asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-        prim.GetReferences().AddReference(asset_path)
+    # prim = get_prim_at_path("/World/Warehouse")
+    # if not prim.IsValid():
+    #     prim = define_prim("/World/Warehouse", "Xform")
+    #     asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+    #     prim.GetReferences().AddReference(asset_path)
 
     # Environment setup
     go2_env_cfg = Go2RSLEnvCfg()
@@ -69,7 +69,8 @@ def run_simulator():
             obs, _, _, _ = env.step(actions)
 
             # # ROS2 data
-            rclpy.spin_once(dm)
+            # rclpy.spin_once(dm)
+            dm.pub_ros2_data()
 
             # limit loop time
             elapsed_time = time.time() - start_time
@@ -78,7 +79,8 @@ def run_simulator():
                 time.sleep(sleep_duration)
         
         actual_loop_time = time.time() - start_time
-        print("actual_loop_time: ", actual_loop_time)
+        rtf = min(1.0, sim_step_dt/elapsed_time)
+        print(f"\rStep time: {actual_loop_time*1000:.2g}ms, Real Time Factor: {rtf:.2g}", end='', flush=True)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Twist, TransformStamped
-from sensor_msgs.msg import PointCloud2, PointField, Image
+from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 from tf2_ros import TransformBroadcaster
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
@@ -11,19 +11,21 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 import subprocess
+import time
 import go2_ctrl
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
+from omni.isaac.ros2_bridge import read_camera_info
 
 
 class RobotDataManager(Node):
     def __init__(self, env, lidar_annotators, cameras):
         super().__init__("robot_data_manager")
-        # self.create_ros_time_graph()
-        # sim_time_set = False
-        # while (rclpy.ok() and sim_time_set==False):
-        #     sim_time_set = self.use_sim_time()
+        self.create_ros_time_graph()
+        sim_time_set = False
+        while (rclpy.ok() and sim_time_set==False):
+            sim_time_set = self.use_sim_time()
 
         self.env = env
         self.num_envs = env.unwrapped.scene.num_envs
@@ -53,7 +55,7 @@ class RobotDataManager(Node):
                 self.pose_pub.append(
                     self.create_publisher(PoseStamped, "unitree_go2/pose", 10))
                 self.lidar_pub.append(
-                    self.create_publisher(PointCloud2, "unitree_go2/lidar/point_cloud", 10)
+                    self.create_publisher(PointCloud2, "unitree_go2/lidar/point_cloud", 1)
                 )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, "unitree_go2/cmd_vel", 
@@ -72,8 +74,14 @@ class RobotDataManager(Node):
                     lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
                 )
         
-        self.create_timer(0.033, self.pub_ros2_data_callback)
-        self.create_timer(0.1, self.pub_lidar_data_callback)
+        # self.create_timer(0.1, self.pub_ros2_data_callback)
+        # self.create_timer(0.1, self.pub_lidar_data_callback)
+
+        # use wall time for lidar and odom pub
+        self.odom_pose_freq = 50.0
+        self.lidar_freq = 15.0
+        self.odom_pose_pub_time = time.time()
+        self.lidar_pub_time = time.time() 
         self.create_static_transform()
         self.create_camera_publisher()  
 
@@ -84,7 +92,6 @@ class RobotDataManager(Node):
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                     ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                     ("OnPlayBack", "omni.graph.action.OnPlaybackTick"),
                 ],
@@ -93,8 +100,6 @@ class RobotDataManager(Node):
                     ("OnPlayBack.outputs:tick", "PublishClock.inputs:execIn"),
                     # Connecting simulationTime data of ReadSimTime to the clock publisher node
                     ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                    # Connecting the ROS2 Context to the clock publisher node so it will run under the specified ROS2 Domain ID
-                    ("Context.outputs:context", "PublishClock.inputs:context"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
                     # Assigning topic name to clock publisher
@@ -167,9 +172,9 @@ class RobotDataManager(Node):
             camera_broadcaster.sendTransform(base_cam_transform)
     
     def create_camera_publisher(self):
-        self.pub_image_graph()
-        # self.pub_color_image()
-        # self.pub_depth_image()
+        # self.pub_image_graph()
+        self.pub_color_image()
+        self.pub_depth_image()
         # self.pub_cam_depth_cloud()
         self.publish_camera_info()
     
@@ -256,6 +261,34 @@ class RobotDataManager(Node):
         for i in range(self.num_envs):
             self.publish_lidar_data(self.lidar_annotators[i].get_data()["data"].reshape(-1, 3), i)
 
+    def pub_ros2_data(self):
+        pub_odom_pose = False
+        pub_lidar = False
+        dt_odom_pose = time.time() - self.odom_pose_pub_time
+        dt_lidar = time.time() - self.lidar_pub_time
+        if (dt_odom_pose >= 1./self.odom_pose_freq):
+            pub_odom_pose = True
+        
+        if (dt_lidar >= 1./self.lidar_freq):
+            pub_lidar = True
+
+        if (pub_odom_pose):
+            self.odom_pose_pub_time = time.time()
+            robot_data = self.env.unwrapped.scene["unitree_go2"].data
+            for i in range(self.num_envs):
+                self.publish_odom(robot_data.root_state_w[i, :3],
+                                robot_data.root_state_w[i, 3:7],
+                                robot_data.root_lin_vel_b[i],
+                                robot_data.root_ang_vel_b[i],
+                                i)
+                self.publish_pose(robot_data.root_state_w[i, :3],
+                                robot_data.root_state_w[i, 3:7], i)
+
+        if (pub_lidar):
+            self.lidar_pub_time = time.time()
+            for i in range(self.num_envs):
+                self.publish_lidar_data(self.lidar_annotators[i].get_data()["data"].reshape(-1, 3), i)
+
     def cmd_vel_callback(self, msg, env_idx):
         go2_ctrl.base_vel_cmd_input[env_idx][0] = msg.linear.x
         go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
@@ -330,8 +363,7 @@ class RobotDataManager(Node):
         for i in range(self.num_envs):
             # The following code will link the camera's render product and publish the data to the specified topic name.
             render_product = self.cameras[i]._render_product_path
-            freq = 30
-            step_size = int(60/freq)
+            step_size = 2
             if (self.num_envs == 1):
                 topic_name = "unitree_go2/front_cam/color_image"
                 frame_id = "unitree_go2/front_cam"                         
@@ -362,8 +394,7 @@ class RobotDataManager(Node):
         for i in range(self.num_envs):
             # The following code will link the camera's render product and publish the data to the specified topic name.
             render_product = self.cameras[i]._render_product_path
-            freq = 30 # TODO: 
-            step_size = int(60/freq)
+            step_size = 2
             if (self.num_envs == 1):
                 topic_name = "unitree_go2/front_cam/depth_image"                
                 frame_id = "unitree_go2/front_cam"          
@@ -396,8 +427,7 @@ class RobotDataManager(Node):
         for i in range(self.num_envs):
             # The following code will link the camera's render product and publish the data to the specified topic name.
             render_product = self.cameras[i]._render_product_path
-            freq = 30
-            step_size = int(60/freq)
+            step_size = 2
             if (self.num_envs == 1):
                 topic_name = "unitree_go2/front_cam/depth_cloud"    
                 frame_id = "unitree_go2/front_cam"          
@@ -431,7 +461,6 @@ class RobotDataManager(Node):
 
     def publish_camera_info(self):
         for i in range(self.num_envs):
-            from omni.isaac.ros2_bridge import read_camera_info
             # The following code will link the camera's render product and publish the data to the specified topic name.
             render_product = self.cameras[i]._render_product_path
             freq = 30

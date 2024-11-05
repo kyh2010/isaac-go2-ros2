@@ -21,7 +21,7 @@ def base_vel_cmd(env: ManagerBasedEnv) -> torch.Tensor:
     return base_vel_cmd_input.clone().to(env.device)
 
 # Update sub_keyboard_event to modify specific rows of the tensor based on key inputs
-def sub_keyboard_event(event, *args, **kwargs) -> bool:
+def sub_keyboard_event(event) -> bool:
     global base_vel_cmd_input
     lin_vel = 1.5
     ang_vel = 1.5
@@ -37,9 +37,9 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
                 base_vel_cmd_input[0] = torch.tensor([0, lin_vel, 0], dtype=torch.float32)
             elif event.input.name == 'D':
                 base_vel_cmd_input[0] = torch.tensor([0, -lin_vel, 0], dtype=torch.float32)
-            elif event.input.name == 'Q':
+            elif event.input.name == 'C':
                 base_vel_cmd_input[0] = torch.tensor([0, 0, ang_vel], dtype=torch.float32)
-            elif event.input.name == 'E':
+            elif event.input.name == 'Z':
                 base_vel_cmd_input[0] = torch.tensor([0, 0, -ang_vel], dtype=torch.float32)
             
             # If there are multiple environments, handle inputs for env 1
@@ -52,9 +52,9 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
                     base_vel_cmd_input[1] = torch.tensor([0, lin_vel, 0], dtype=torch.float32)
                 elif event.input.name == 'L':
                     base_vel_cmd_input[1] = torch.tensor([0, -lin_vel, 0], dtype=torch.float32)
-                elif event.input.name == 'U':
+                elif event.input.name == 'M':
                     base_vel_cmd_input[1] = torch.tensor([0, 0, ang_vel], dtype=torch.float32)
-                elif event.input.name == 'O':
+                elif event.input.name == '>':
                     base_vel_cmd_input[1] = torch.tensor([0, 0, -ang_vel], dtype=torch.float32)
         
         # Reset commands to zero on key release

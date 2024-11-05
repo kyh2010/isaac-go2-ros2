@@ -1,7 +1,7 @@
 from omni.isaac.lab.scene import InteractiveSceneCfg
 from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg, CameraCfg
+from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 import omni.isaac.lab.sim as sim_utils
@@ -37,9 +37,9 @@ class Go2SimCfg(InteractiveSceneCfg):
     # Go2 height scanner
     height_scanner = RayCasterCfg(
         prim_path="{ENV_REGEX_NS}/Go2/base",
-        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)), # TODO meter or cm?
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20)), 
         attach_yaw_only=True,
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]), # TODO: how this works?
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]), 
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
@@ -142,7 +142,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
         self.sim.render_interval = 4 # 
         self.sim.disable_contact_processing = True
-        # self.sim.physics_material = self.scene.terrain.physics_material
+        self.sim.physics_material = self.scene.terrain.physics_material
 
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored
