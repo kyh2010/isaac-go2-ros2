@@ -13,7 +13,9 @@ from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 from omni.isaac.lab.terrains import TerrainGeneratorCfg
 from omni.isaac.lab.terrains.height_field.hf_terrains_cfg import HfDiscreteObstaclesTerrainCfg
+from terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
 import go2_ctrl
+
 
 @configclass
 class Go2SimCfg(InteractiveSceneCfg):
@@ -29,13 +31,15 @@ class Go2SimCfg(InteractiveSceneCfg):
         terrain_generator=TerrainGeneratorCfg(
             seed=0,
             size=(50, 50),
-            sub_terrains={"t1": HfDiscreteObstaclesTerrainCfg(
+            sub_terrains={"t1": HfUniformDiscreteObstaclesTerrainCfg(
                 obstacle_height_mode="fixed",
                 size=(50, 50),
                 obstacle_width_range=(0.5, 1.0),
                 obstacle_height_range=(2.0, 2.0),
                 num_obstacles=400,
-                border_width=5
+                obstacles_distance=2.0,
+                border_width=5,
+                avoid_positions=[[0, 0]]
             )},
             slope_threshold=None   
         )     
