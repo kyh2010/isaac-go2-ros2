@@ -17,7 +17,7 @@ import omni
 import carb
 import go2_ctrl
 import go2_ros2_bridge
-from go2_env import Go2RSLEnvCfg
+from go2_env import Go2RSLEnvCfg, camera_follow
 import go2_sensors
 import time
 
@@ -69,8 +69,10 @@ def run_simulator():
             obs, _, _, _ = env.step(actions)
 
             # # ROS2 data
-            # rclpy.spin_once(dm)
             dm.pub_ros2_data()
+
+            # Camera follow
+            camera_follow(env)
 
             # limit loop time
             elapsed_time = time.time() - start_time

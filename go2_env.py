@@ -13,6 +13,9 @@ from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 from omni.isaac.lab.terrains import TerrainGeneratorCfg
 from terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
+from omni.isaac.core.utils.viewports import set_camera_view
+import numpy as np
+from scipy.spatial.transform import Rotation as R
 import go2_ctrl
 
 
@@ -33,6 +36,7 @@ class Go2SimCfg(InteractiveSceneCfg):
             size=(50, 50),
             color_scheme="height",
             sub_terrains={"t1": HfUniformDiscreteObstaclesTerrainCfg(
+                seed=0,
                 size=(50, 50),
                 obstacle_width_range=(0.5, 1.0),
                 obstacle_height_range=(1.0, 2.0),
@@ -178,3 +182,16 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
 
         if self.scene.height_scanner is not None:
             self.scene.height_scanner.update_period = self.decimation * self.sim.dt
+
+def camera_follow(env):
+    if (env.unwrapped.scene.num_envs == 1):
+        robot_position = env.unwrapped.scene["unitree_go2"].data.root_state_w[0, :3].cpu().numpy()
+        robot_orientation = env.unwrapped.scene["unitree_go2"].data.root_state_w[0, 3:7].cpu().numpy()
+        rotation = R.from_quat([robot_orientation[1], robot_orientation[2], 
+                                robot_orientation[3], robot_orientation[0]])
+        yaw = rotation.as_euler('zyx')[0]
+        yaw_rotation = R.from_euler('z', yaw).as_matrix()
+        set_camera_view(
+            yaw_rotation.dot(np.asarray([-4.0, 0.0, 5.0])) + robot_position,
+            robot_position
+        )

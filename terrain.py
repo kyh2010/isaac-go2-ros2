@@ -4,6 +4,7 @@ import time
 
 @height_field_to_mesh
 def uniform_discrete_obstacles_terrain(difficulty: float, cfg) -> np.ndarray:
+    np.random.seed(cfg.seed) 
     def is_good_position(obs_list, obs_pos, min_dist):
         for i in range(len(obs_list)):
             obs_pos_i = obs_list[i]

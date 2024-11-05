@@ -8,7 +8,8 @@ class HfUniformDiscreteObstaclesTerrainCfg(HfTerrainBaseCfg):
     """Configuration for a discrete obstacles height field terrain."""
 
     function = terrain.uniform_discrete_obstacles_terrain
-
+    seed: float = 0
+    """Env seed."""
     obstacle_width_range: tuple[float, float] = MISSING
     """The minimum and maximum width of the obstacles (in m)."""
     obstacle_height_range: tuple[float, float] = MISSING

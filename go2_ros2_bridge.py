@@ -6,12 +6,10 @@ from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 from tf2_ros import TransformBroadcaster
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
-import numpy as np
 import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
-from omni.isaac.core.utils.viewports import set_camera_view
 import subprocess
 import time
 import go2_ctrl
@@ -264,12 +262,6 @@ class RobotDataManager(Node):
             self.publish_lidar_data(self.lidar_annotators[i].get_data()["data"].reshape(-1, 3), i)
 
     def pub_ros2_data(self):
-        if (self.num_envs == 1):
-            robot_pos = self.env.unwrapped.scene["unitree_go2"].data.root_state_w[0, :3].cpu().numpy()
-            set_camera_view(
-                np.asarray([-4.0, 0.0, 5.0]) + robot_pos,
-                robot_pos
-            )
         pub_odom_pose = False
         pub_lidar = False
         dt_odom_pose = time.time() - self.odom_pose_pub_time
