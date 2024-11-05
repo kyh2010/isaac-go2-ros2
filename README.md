@@ -14,5 +14,4 @@ reference: [link](https://stackoverflow.com/questions/58424974/anaconda-importer
 
 
 ## TODO:
-1. Use graph to replace all the current modules
 4. Environment (todo)
