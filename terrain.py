@@ -53,6 +53,7 @@ def uniform_discrete_obstacles_terrain(difficulty: float, cfg) -> np.ndarray:
             sample_time = time.time() 
             if (sample_time - start_time) > 0.2:
                 stop_sampling = True
+                break
         if (stop_sampling):
             break
 

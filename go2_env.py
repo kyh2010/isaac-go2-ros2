@@ -12,18 +12,18 @@ from omni.isaac.lab.envs import ManagerBasedRLEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
 from omni.isaac.lab.terrains import TerrainGeneratorCfg
-from omni.isaac.lab.terrains.height_field.hf_terrains_cfg import HfDiscreteObstaclesTerrainCfg
 from terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
 import go2_ctrl
 
 
 @configclass
 class Go2SimCfg(InteractiveSceneCfg):
-    # Terrain
-    plane = TerrainImporterCfg(
-        prim_path="/World/ground/plane",
-        terrain_type="plane",
-    )
+    # ground plane
+    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", 
+                          spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
+                          init_state=AssetBaseCfg.InitialStateCfg(
+                              pos=(0, 0, 0.001)
+                          ))
 
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
@@ -31,24 +31,27 @@ class Go2SimCfg(InteractiveSceneCfg):
         terrain_generator=TerrainGeneratorCfg(
             seed=0,
             size=(50, 50),
+            color_scheme="height",
             sub_terrains={"t1": HfUniformDiscreteObstaclesTerrainCfg(
-                obstacle_height_mode="fixed",
                 size=(50, 50),
                 obstacle_width_range=(0.5, 1.0),
-                obstacle_height_range=(2.0, 2.0),
+                obstacle_height_range=(1.0, 2.0),
                 num_obstacles=400,
                 obstacles_distance=2.0,
                 border_width=5,
                 avoid_positions=[[0, 0]]
             )},
-            slope_threshold=None   
-        )     
+        ),
+        visual_material=None,     
     )
 
-    # lights
+    light = AssetBaseCfg(
+        prim_path="/World/light",
+        spawn=sim_utils.DistantLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
+    )
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.4, 0.5, 0.7), intensity=2500.0),
+        spawn=sim_utils.DomeLightCfg(color=(0.2, 0.2, 0.3), intensity=2000.0),
     )
 
     # Go2 Robot
@@ -155,7 +158,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
 
     def __post_init__(self):
         # viewer settings
-        self.viewer.eye = [4.5, 0.0, 6.0]
+        self.viewer.eye = [-3.0, 0.0, 4.0]
         self.viewer.lookat = [0.0, 0.0, 0.0]
 
         # step settings
@@ -165,7 +168,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
         self.sim.render_interval = 4 # 
         self.sim.disable_contact_processing = True
-        self.sim.physics_material = self.scene.terrain.physics_material
+        # self.sim.physics_material = self.scene.terrain.physics_material
 
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored

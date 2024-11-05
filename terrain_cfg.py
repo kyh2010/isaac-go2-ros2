@@ -9,11 +9,6 @@ class HfUniformDiscreteObstaclesTerrainCfg(HfTerrainBaseCfg):
 
     function = terrain.uniform_discrete_obstacles_terrain
 
-    obstacle_height_mode: str = "choice"
-    """The mode to use for the obstacle height. Defaults to "choice".
-
-    The following modes are supported: "choice", "fixed".
-    """
     obstacle_width_range: tuple[float, float] = MISSING
     """The minimum and maximum width of the obstacles (in m)."""
     obstacle_height_range: tuple[float, float] = MISSING
