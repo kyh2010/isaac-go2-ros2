@@ -4,13 +4,14 @@ from isaacsim import SimulationApp
 # add argparse arguments
 parser = argparse.ArgumentParser(description="This script demonstrates different legged robots.")
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to spawn.")
+parser.add_argument("--camera_follow",  action="store_true", default=False, help="Camera follows robot.")
+parser.add_argument("--env_name", type=str, default="obstacle", help="Name of the environment.")
 args_cli = parser.parse_args()
 
 # # launch omniverse app
 simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0,
                                 "width": 1280, "height": 720, 
                                 "hide_ui": False})
-
 import rclpy
 import torch
 import omni
@@ -18,29 +19,29 @@ import carb
 import go2_ctrl
 import go2_ros2_bridge
 from go2_env import Go2RSLEnvCfg, camera_follow
+import sim_env
 import go2_sensors
 import time
 
 def run_simulator():
-    # from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-    # from omni.isaac.nucleus import get_assets_root_path
-
-    # assets_root_path = get_assets_root_path()
-    # if assets_root_path is None:
-    #     carb.log_error("Could not find Isaac Sim assets folder")
-
-    # prim = get_prim_at_path("/World/Warehouse")
-    # if not prim.IsValid():
-    #     prim = define_prim("/World/Warehouse", "Xform")
-    #     asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-    #     prim.GetReferences().AddReference(asset_path)
-
-    # Environment setup
+    # Go2 Environment setup
     go2_env_cfg = Go2RSLEnvCfg()
     go2_env_cfg.scene.num_envs = args_cli.num_envs
     go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
+
+    # Simulation environment
+    if (args_cli.env_name == "obstacle"):
+        sim_env.create_obstacle_env() # obstacles
+    elif (args_cli.env_name == "warehouse"):
+        sim_env.create_warehouse_env() # warehouse
+    elif (args_cli.env_name == "warehouse_forklifts"):
+        sim_env.create_warehouse_forklifts_env() # warehouse forklifts
+    elif (args_cli.env_name == "warehouse_shelves"):
+        sim_env.create_warehouse_shelves_env() # warehouse shelves
+    elif (args_cli.env_name == "full_warehouse"):
+        sim_env.create_full_warehouse_env() # full warehouse
 
     # Sensor setup
     sm = go2_sensors.SensorManager(args_cli.num_envs)
@@ -72,7 +73,8 @@ def run_simulator():
             dm.pub_ros2_data()
 
             # Camera follow
-            camera_follow(env)
+            if (args_cli.camera_follow):
+                camera_follow(env)
 
             # limit loop time
             elapsed_time = time.time() - start_time

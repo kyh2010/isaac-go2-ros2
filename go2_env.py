@@ -1,5 +1,4 @@
 from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
 from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
 from omni.isaac.lab.utils import configclass
@@ -11,8 +10,6 @@ from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
 from omni.isaac.lab.envs import ManagerBasedRLEnvCfg
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils.noise import UniformNoiseCfg
-from omni.isaac.lab.terrains import TerrainGeneratorCfg
-from terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
 from omni.isaac.core.utils.viewports import set_camera_view
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -22,32 +19,11 @@ import go2_ctrl
 @configclass
 class Go2SimCfg(InteractiveSceneCfg):
     # ground plane
-    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", 
+    ground = AssetBaseCfg(prim_path="/World/ground", 
                           spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
                           init_state=AssetBaseCfg.InitialStateCfg(
                               pos=(0, 0, 1e-4)
                           ))
-    # Terrain
-    terrain = TerrainImporterCfg(
-        prim_path="/World/ground",
-        terrain_type="generator",
-        terrain_generator=TerrainGeneratorCfg(
-            seed=0,
-            size=(50, 50),
-            color_scheme="height",
-            sub_terrains={"t1": HfUniformDiscreteObstaclesTerrainCfg(
-                seed=0,
-                size=(50, 50),
-                obstacle_width_range=(0.5, 1.0),
-                obstacle_height_range=(1.0, 2.0),
-                num_obstacles=400,
-                obstacles_distance=2.0,
-                border_width=5,
-                avoid_positions=[[0, 0]]
-            )},
-        ),
-        visual_material=None,     
-    )
 
     # Lights
     light = AssetBaseCfg(
@@ -160,7 +136,6 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
     events = EventCfg()
     curriculum = CurriculumCfg()
 
-
     def __post_init__(self):
         # viewer settings
         self.viewer.eye = [-4.0, 0.0, 5.0]
@@ -173,7 +148,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
         self.sim.render_interval = 4 # 
         self.sim.disable_contact_processing = True
-        self.sim.physics_material = self.scene.terrain.physics_material
+        # self.sim.physics_material = self.scene.terrain.physics_material
 
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored
