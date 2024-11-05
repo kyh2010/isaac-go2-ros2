@@ -37,9 +37,9 @@ def sub_keyboard_event(event) -> bool:
                 base_vel_cmd_input[0] = torch.tensor([0, lin_vel, 0], dtype=torch.float32)
             elif event.input.name == 'D':
                 base_vel_cmd_input[0] = torch.tensor([0, -lin_vel, 0], dtype=torch.float32)
-            elif event.input.name == 'C':
-                base_vel_cmd_input[0] = torch.tensor([0, 0, ang_vel], dtype=torch.float32)
             elif event.input.name == 'Z':
+                base_vel_cmd_input[0] = torch.tensor([0, 0, ang_vel], dtype=torch.float32)
+            elif event.input.name == 'C':
                 base_vel_cmd_input[0] = torch.tensor([0, 0, -ang_vel], dtype=torch.float32)
             
             # If there are multiple environments, handle inputs for env 1

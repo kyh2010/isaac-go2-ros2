@@ -22,9 +22,9 @@ class Go2SimCfg(InteractiveSceneCfg):
     ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", 
                           spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
                           init_state=AssetBaseCfg.InitialStateCfg(
-                              pos=(0, 0, 0.001)
+                              pos=(0, 0, 1e-4)
                           ))
-
+    # Terrain
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
         terrain_type="generator",
@@ -45,6 +45,7 @@ class Go2SimCfg(InteractiveSceneCfg):
         visual_material=None,     
     )
 
+    # Lights
     light = AssetBaseCfg(
         prim_path="/World/light",
         spawn=sim_utils.DistantLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
@@ -158,7 +159,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
 
     def __post_init__(self):
         # viewer settings
-        self.viewer.eye = [-3.0, 0.0, 4.0]
+        self.viewer.eye = [-4.0, 0.0, 5.0]
         self.viewer.lookat = [0.0, 0.0, 0.0]
 
         # step settings
@@ -168,7 +169,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
         self.sim.render_interval = 4 # 
         self.sim.disable_contact_processing = True
-        # self.sim.physics_material = self.scene.terrain.physics_material
+        self.sim.physics_material = self.scene.terrain.physics_material
 
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored
