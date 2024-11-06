@@ -3,4 +3,5 @@ defaults:
 
 num_envs: 1
 camera_follow: True
-env_name: obstacle
+# env_name: obstacle
+env_name: empty
