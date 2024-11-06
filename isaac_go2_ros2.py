@@ -54,7 +54,7 @@ def run_simulator(cfg):
     dm = go2_ros2_bridge.RobotDataManager(env, lidar_annotators, cameras)
 
     # Run simulation
-    sim_step_dt = go2_env_cfg.sim.dt * go2_env_cfg.decimation
+    sim_step_dt = float(go2_env_cfg.sim.dt * go2_env_cfg.decimation)
     obs, _ = env.reset()
     while simulation_app.is_running():
         start_time = time.time()
@@ -77,7 +77,6 @@ def run_simulator(cfg):
             if elapsed_time < sim_step_dt:
                 sleep_duration = sim_step_dt - elapsed_time
                 time.sleep(sleep_duration)
-        
         actual_loop_time = time.time() - start_time
         rtf = min(1.0, sim_step_dt/elapsed_time)
         print(f"\rStep time: {actual_loop_time*1000:.2g}ms, Real Time Factor: {rtf:.2g}", end='', flush=True)
