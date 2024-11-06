@@ -96,11 +96,9 @@ class ObservationsCfg:
 @configclass
 class CommandsCfg:
     """Command specifications for the MDP."""
-    base_velocity = mdp.UniformVelocityCommandCfg(
+    base_vel_cmd = mdp.UniformVelocityCommandCfg(
         asset_name="unitree_go2",
         resampling_time_range=(0.0, 0.0),
-        heading_command=True,
-        heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
             lin_vel_x=(0.0, 0.0), lin_vel_y=(0.0, 0.0), ang_vel_z=(0.0, 0.0), heading=(0, 0)

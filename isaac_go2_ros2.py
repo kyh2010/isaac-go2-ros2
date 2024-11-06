@@ -67,6 +67,7 @@ def run_simulator(cfg):
 
             # # ROS2 data
             dm.pub_ros2_data()
+            rclpy.spin_once(dm)
 
             # Camera follow
             if (cfg.camera_follow):

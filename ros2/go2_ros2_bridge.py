@@ -290,7 +290,6 @@ class RobotDataManager(Node):
                 self.publish_lidar_data(self.lidar_annotators[i].get_data()["data"].reshape(-1, 3), i)
 
     def cmd_vel_callback(self, msg, env_idx):
-        print("here")
         go2_ctrl.base_vel_cmd_input[env_idx][0] = msg.linear.x
         go2_ctrl.base_vel_cmd_input[env_idx][1] = msg.linear.y
         go2_ctrl.base_vel_cmd_input[env_idx][2] = msg.angular.z
