@@ -13,7 +13,7 @@ from omni.isaac.lab.utils.noise import UniformNoiseCfg
 from omni.isaac.core.utils.viewports import set_camera_view
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import go2_ctrl
+import go2.go2_ctrl as go2_ctrl
 
 
 @configclass

@@ -1,5 +1,5 @@
 from omni.isaac.lab.terrains.height_field.hf_terrains_cfg import HfTerrainBaseCfg
-import terrain
+import env.terrain as terrain
 from omni.isaac.lab.utils import configclass
 from dataclasses import MISSING
 

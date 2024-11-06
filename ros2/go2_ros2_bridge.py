@@ -12,7 +12,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 import subprocess
 import time
-import go2_ctrl
+import go2.go2_ctrl as go2_ctrl
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)

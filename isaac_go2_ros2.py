@@ -1,14 +1,6 @@
-import argparse
 from isaacsim import SimulationApp
 
-# add argparse arguments
-parser = argparse.ArgumentParser(description="This script demonstrates different legged robots.")
-parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to spawn.")
-parser.add_argument("--camera_follow",  action="store_true", default=False, help="Camera follows robot.")
-parser.add_argument("--env_name", type=str, default="obstacle", help="Name of the environment.")
-args_cli = parser.parse_args()
-
-# # launch omniverse app
+# launch omniverse app
 simulation_app = SimulationApp({"headless": False, "anti_aliasing": 0,
                                 "width": 1280, "height": 720, 
                                 "hide_ui": False})
@@ -16,35 +8,39 @@ import rclpy
 import torch
 import omni
 import carb
-import go2_ctrl
-import go2_ros2_bridge
-from go2_env import Go2RSLEnvCfg, camera_follow
-import sim_env
-import go2_sensors
+import go2.go2_ctrl as go2_ctrl
+import ros2.go2_ros2_bridge as go2_ros2_bridge
+from go2.go2_env import Go2RSLEnvCfg, camera_follow
+import env.sim_env as sim_env
+import go2.go2_sensors as go2_sensors
 import time
+import os
+import hydra
 
-def run_simulator():
+FILE_PATH = os.path.join(os.path.dirname(__file__), "cfg")
+@hydra.main(config_path=FILE_PATH, config_name="sim", version_base=None)
+def run_simulator(cfg):
     # Go2 Environment setup
     go2_env_cfg = Go2RSLEnvCfg()
-    go2_env_cfg.scene.num_envs = args_cli.num_envs
-    go2_ctrl.init_base_vel_cmd(args_cli.num_envs)
+    go2_env_cfg.scene.num_envs = cfg.num_envs
+    go2_ctrl.init_base_vel_cmd(cfg.num_envs)
     # env, policy = go2_ctrl.get_rsl_flat_policy(go2_env_cfg)
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
 
     # Simulation environment
-    if (args_cli.env_name == "obstacle"):
+    if (cfg.env_name == "obstacle"):
         sim_env.create_obstacle_env() # obstacles
-    elif (args_cli.env_name == "warehouse"):
+    elif (cfg.env_name == "warehouse"):
         sim_env.create_warehouse_env() # warehouse
-    elif (args_cli.env_name == "warehouse_forklifts"):
+    elif (cfg.env_name == "warehouse_forklifts"):
         sim_env.create_warehouse_forklifts_env() # warehouse forklifts
-    elif (args_cli.env_name == "warehouse_shelves"):
+    elif (cfg.env_name == "warehouse_shelves"):
         sim_env.create_warehouse_shelves_env() # warehouse shelves
-    elif (args_cli.env_name == "full_warehouse"):
+    elif (cfg.env_name == "full_warehouse"):
         sim_env.create_full_warehouse_env() # full warehouse
 
     # Sensor setup
-    sm = go2_sensors.SensorManager(args_cli.num_envs)
+    sm = go2_sensors.SensorManager(cfg.num_envs)
     lidar_annotators = sm.add_rtx_lidar()
     cameras = sm.add_camera()
 
@@ -73,7 +69,7 @@ def run_simulator():
             dm.pub_ros2_data()
 
             # Camera follow
-            if (args_cli.camera_follow):
+            if (cfg.camera_follow):
                 camera_follow(env)
 
             # limit loop time

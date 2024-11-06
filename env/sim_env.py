@@ -2,7 +2,7 @@ from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.nucleus import get_assets_root_path
 from omni.isaac.lab.terrains import TerrainImporterCfg, TerrainImporter
 from omni.isaac.lab.terrains import TerrainGeneratorCfg
-from terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
+from env.terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
 
 def create_obstacle_env():
     # Terrain
