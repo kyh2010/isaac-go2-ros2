@@ -81,7 +81,9 @@ def run_simulator(cfg):
         actual_loop_time = time.time() - start_time
         rtf = min(1.0, sim_step_dt/elapsed_time)
         print(f"\rStep time: {actual_loop_time*1000:.2g}ms, Real Time Factor: {rtf:.2g}", end='', flush=True)
-
+    
+    dm.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == "__main__":
     run_simulator()
