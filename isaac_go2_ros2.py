@@ -28,8 +28,12 @@ def run_simulator(cfg):
     env, policy = go2_ctrl.get_rsl_rough_policy(go2_env_cfg)
 
     # Simulation environment
-    if (cfg.env_name == "obstacle"):
-        sim_env.create_obstacle_env() # obstacles
+    if (cfg.env_name == "obstacle-dense"):
+        sim_env.create_obstacle_dense_env() # obstacles dense
+    elif (cfg.env_name == "obstacle-medium"):
+        sim_env.create_obstacle_medium_env() # obstacles medium
+    elif (cfg.env_name == "obstacle-sparse"):
+        sim_env.create_obstacle_sparse_env() # obstacles sparse
     elif (cfg.env_name == "warehouse"):
         sim_env.create_warehouse_env() # warehouse
     elif (cfg.env_name == "warehouse_forklifts"):
