@@ -39,5 +39,6 @@ class SensorManager:
                 orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
             )
             camera.initialize()
+            camera.set_focal_length(1.5)
             cameras.append(camera)
         return cameras
