@@ -1,4 +1,5 @@
 # isaac-go2-ros2
+![go2 navigation - gif](https://github.com/user-attachments/assets/8a3fb64a-966c-43f1-9124-f95ba060adff)
 
 ### Common Issue
 If the following issue is encountered:
