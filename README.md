@@ -1,4 +1,4 @@
-#  Isaac Sim Unitree Go2 with ROS2
+#  Isaac Sim Unitree Go2
 Welcome to the Isaac Sim Unitree Go2 repository. This repo implements the Unitree Go2 quadruped using Isaac Sim/IsaacLab with ROS2 interface. 
 <table>
   <tr>
