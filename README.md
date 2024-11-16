@@ -1,5 +1,10 @@
 #  Isaac Sim Unitree Go2
-Welcome to the Isaac Sim Unitree Go2 repository. This repo implements the Unitree Go2 quadruped using Isaac Sim/IsaacLab with ROS2 interface. 
+[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![ROS2](https://img.shields.io/badge/ROS2-Humble-orange.svg)](https://docs.ros.org/en/humble/index.html)
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-4.2.0-red.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
+[![Linux platform](https://img.shields.io/badge/platform-Ubuntu--22.04-green.svg)](https://releases.ubuntu.com/22.04/)
+
+Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a comprehensive implementation of the Unitree Go2 quadruped robot simulator, leveraging the powerful Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
 <table>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/8a3fb64a-966c-43f1-9124-f95ba060adff" alt="go2 navigation - gif" style="width: 100%;"></td>
@@ -7,18 +12,36 @@ Welcome to the Isaac Sim Unitree Go2 repository. This repo implements the Unitre
   </tr>
 </table>
 
-### Common Issue
-If the following issue is encountered:
+## Installation Guide
+**Step I:** Please follow the latest [Isaac Lab official documentation](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/binaries_installation.html) to install the Isaac Sim and Isaac Lab.
+
+**Step II:** Please install [ROS2 Humble](https://docs.ros.org/en/humble/index.html) with the official installation guide.
+
+**Step III:** Install the prerequisite C extension in the conda environment. [reference link](https://stackoverflow.com/questions/58424974/anaconda-importerror-usr-lib64-libstdc-so-6-version-glibcxx-3-4-21-not-fo)
 ```
-ImportError: /home/zhefan/miniconda3/envs/isaaclab/bin/../lib/libstdc++.so.6: version `GLIBCXX_3.4.30' not found (required by /opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/_rclpy_pybind11.cpython-310-x86_64-linux-gnu.so)
-The C extension '/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/_rclpy_pybind11.cpython-310-x86_64-linux-gnu.so' failed to be imported while being present on the system. Please refer to 'https://docs.ros.org/en/{distro}/Guides/Installation-Troubleshooting.html#import-failing-even-with-library-present-on-the-system' for possible solutions
-```
-Please run: 
-```
+# default conda env for Isaac Lab
+conda activate isaaclab      
 conda install -c conda-forge libstdcxx-ng
 ```
-reference: [link](https://stackoverflow.com/questions/58424974/anaconda-importerror-usr-lib64-libstdc-so-6-version-glibcxx-3-4-21-not-fo)
+
+**Step IV:** Clone this repo to your local directory.
+```
+git clone https://github.com/Zhefan-Xu/isaac-go2-ros2.git
+```
+
+## Run Simulator 
+To run the simulator, please use the following command:
+```
+cd path/to/isaac-go2-ros2
+
+# activate the isaaclab venv
+conda activate isaaclab
+python isaac_go2_ros2.py
+```
+
+## Example use case
 
 
-## TODO:
-4. Environment (todo)
+
+
+
