@@ -59,7 +59,7 @@ The current implementation contains a few environments which can be found on ```
 
 
 #### Launch multiple robots in the environment
-This repository supports running multiple Unitree Go2 environment and you can change the number of robots by changing the ```num_envs``` parameter in the config file ```isaac-go2-ros2/cfg/sim.yaml```.
+This repository supports running multiple Unitree Go2 environment and you can change the number of robots by changing the ```num_envs``` parameter in the config file ```isaac-go2-ros2/cfg/sim.yaml```. The following shows an example video.
 
 https://github.com/user-attachments/assets/47ef05c1-5124-4feb-afc8-a3f2c306a212
 
