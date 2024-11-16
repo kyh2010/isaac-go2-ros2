@@ -40,7 +40,7 @@ python isaac_go2_ros2.py
 ```
 
 ## Example use case
-
+The following video shows an example using this simulator with a RL-based algorithm to achieve autonomous navigation and collision avoidance:
 
 
 
