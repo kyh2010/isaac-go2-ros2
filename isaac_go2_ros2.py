@@ -36,11 +36,11 @@ def run_simulator(cfg):
         sim_env.create_obstacle_sparse_env() # obstacles sparse
     elif (cfg.env_name == "warehouse"):
         sim_env.create_warehouse_env() # warehouse
-    elif (cfg.env_name == "warehouse_forklifts"):
+    elif (cfg.env_name == "warehouse-forklifts"):
         sim_env.create_warehouse_forklifts_env() # warehouse forklifts
-    elif (cfg.env_name == "warehouse_shelves"):
+    elif (cfg.env_name == "warehouse-shelves"):
         sim_env.create_warehouse_shelves_env() # warehouse shelves
-    elif (cfg.env_name == "full_warehouse"):
+    elif (cfg.env_name == "full-warehouse"):
         sim_env.create_full_warehouse_env() # full warehouse
 
     # Sensor setup
