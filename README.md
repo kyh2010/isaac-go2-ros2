@@ -40,5 +40,9 @@ python isaac_go2_ros2.py
 The following video shows an example using this simulator with a RL-based algorithm to achieve autonomous navigation and collision avoidance:
 
 
+https://github.com/user-attachments/assets/ccc986c6-bf94-41fe-a4d5-3417ce8b3384
+
+
+
 
 
