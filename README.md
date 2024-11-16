@@ -4,7 +4,7 @@
 [![IsaacSim](https://img.shields.io/badge/IsaacSim-4.2.0-red.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
 [![Linux platform](https://img.shields.io/badge/platform-Ubuntu--22.04-green.svg)](https://releases.ubuntu.com/22.04/)
 
-Welcome to the Isaac Sim Unitree Go2 ROS2 repository! This repository provides a Unitree Go2 quadruped robot simulator, leveraging the powerful Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
+Welcome to the Isaac Sim Unitree Go2 ROS2 repository! This repository provides a Unitree Go2 quadruped robot simulation, leveraging the powerful Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
 <table>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/8a3fb64a-966c-43f1-9124-f95ba060adff" alt="go2 navigation - gif" style="width: 100%;"></td>
@@ -29,13 +29,13 @@ conda install -c conda-forge libstdcxx-ng
 git clone https://github.com/Zhefan-Xu/isaac-go2-ros2.git
 ```
 
-## Run Simulator 
-To run the simulator, please use the following command:
+## Run Unitree Go2 Simulation 
+To run the simulation, please use the following command:
 ```
 conda activate isaaclab
 python isaac_go2_ros2.py
 ```
-Once the simulator is loaded, the robot can be teleoperated by the keyboard:
+Once the simulation is loaded, the robot can be teleoperated by the keyboard:
 
 ```W```: Forward, ```A```: Left, ```S```: Backward, ```D```: Right, ```Z```: Left Turn, ```C```: Right Turn.
 
@@ -44,7 +44,7 @@ https://github.com/user-attachments/assets/7abb41fd-26f7-4e5d-bc7f-98ee10467a6a
 
 
 ## ROS2 Topics and Visualization
-After launching the simulator, the ROS2 data can be visualized in ```Rviz2```:
+After launching the simulation, the ROS2 data can be visualized in ```Rviz2```:
 ```
 rviz2 -d /path/to/isaac-go2-ros2/rviz/go2.rviz
 ```
@@ -91,7 +91,7 @@ https://github.com/user-attachments/assets/47ef05c1-5124-4feb-afc8-a3f2c306a212
 
 
 ## Example Usage
-The video shows an example of using this simulator with an RL agent to achieve navigation and collision avoidance:
+The video shows an example of using this repo with an RL agent to achieve navigation and collision avoidance:
 
 
 https://github.com/user-attachments/assets/ccc986c6-bf94-41fe-a4d5-3417ce8b3384
