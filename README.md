@@ -45,7 +45,12 @@ https://github.com/user-attachments/assets/7abb41fd-26f7-4e5d-bc7f-98ee10467a6a
 
 
 ## Simulation Environments & settings
+The simulation environments and settings can be changed in ```isaac-go2-ros2/cfg/sim.yaml``` config file. 
 
+#### Launch different simulation environments
+The current implementation contains a few environments which can be found on ```isaac-go2-ros2/env/sim_env.py```, which follows standard Isaac Sim method for importing USD environments. To change the environment, please change the ```env_name``` in the config file ```isaac-go2-ros2/cfg/sim.yaml```. 
+
+#### Launch multiple robots in the environment
 https://github.com/user-attachments/assets/47ef05c1-5124-4feb-afc8-a3f2c306a212
 
 
