@@ -36,8 +36,8 @@ conda activate isaaclab
 python isaac_go2_ros2.py
 ```
 
-## Example use case
-The following video shows an example using this simulator with a RL-based algorithm to achieve autonomous navigation and collision avoidance:
+## Example Usage
+The following video shows an example of using this simulator with an RL agent to achieve navigation and collision avoidance:
 
 
 https://github.com/user-attachments/assets/ccc986c6-bf94-41fe-a4d5-3417ce8b3384
