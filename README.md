@@ -32,9 +32,6 @@ git clone https://github.com/Zhefan-Xu/isaac-go2-ros2.git
 ## Run Simulator 
 To run the simulator, please use the following command:
 ```
-cd path/to/isaac-go2-ros2
-
-# activate the isaaclab venv
 conda activate isaaclab
 python isaac_go2_ros2.py
 ```
