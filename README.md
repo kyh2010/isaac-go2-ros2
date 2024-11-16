@@ -48,7 +48,15 @@ https://github.com/user-attachments/assets/7abb41fd-26f7-4e5d-bc7f-98ee10467a6a
 The simulation environments and settings can be changed in ```isaac-go2-ros2/cfg/sim.yaml``` config file. 
 
 #### Launch different simulation environments
-The current implementation contains a few environments which can be found on ```isaac-go2-ros2/env/sim_env.py```, which follows standard Isaac Sim method for importing USD environments. To change the environment, please change the ```env_name``` in the config file ```isaac-go2-ros2/cfg/sim.yaml```. 
+The current implementation contains a few environments which can be found on ```isaac-go2-ros2/env/sim_env.py```, which follows standard Isaac Sim method for importing USD environments. To change the environment, please change the ```env_name``` in the config file ```isaac-go2-ros2/cfg/sim.yaml```. Current available environments:
+- ```warehouse```: A simple warehouse environment in Isaac Sim.
+- ```warehouse_forklifts```: A warehouse environment with forklifts.
+- ```warehouse_shelves```: A warehouse environment with shelves.
+- ```full_warehouse```: A full warehouse environment containing everything.
+- ```obstacle-sparse```: A sparse obstacle field environment.
+- ```obstacle-medium```: A  medium obstacle field environment.
+- ```obstacle-dense```: A dense obstacle field environment.
+
 
 #### Launch multiple robots in the environment
 https://github.com/user-attachments/assets/47ef05c1-5124-4feb-afc8-a3f2c306a212
