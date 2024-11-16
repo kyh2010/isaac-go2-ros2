@@ -35,6 +35,14 @@ To run the simulator, please use the following command:
 conda activate isaaclab
 python isaac_go2_ros2.py
 ```
+Once the simulator is loaded, the robot can be teleoperated by the keyboard:
+
+```W```: Forward, ```A```: Left, ```S```: Backward, ```D```: Right, ```Z```: Left Turn, ```C```: Right Turn.
+
+
+https://github.com/user-attachments/assets/7abb41fd-26f7-4e5d-bc7f-98ee10467a6a
+
+
 
 ## Simulation Environments & settings
 
