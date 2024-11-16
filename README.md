@@ -38,6 +38,11 @@ python isaac_go2_ros2.py
 
 ## Simulation Environments & settings
 
+https://github.com/user-attachments/assets/47ef05c1-5124-4feb-afc8-a3f2c306a212
+
+
+
+
 ## Example Usage
 The following video shows an example of using this simulator with an RL agent to achieve navigation and collision avoidance:
 
