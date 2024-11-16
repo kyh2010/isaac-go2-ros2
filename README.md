@@ -43,6 +43,8 @@ Once the simulator is loaded, the robot can be teleoperated by the keyboard:
 https://github.com/user-attachments/assets/7abb41fd-26f7-4e5d-bc7f-98ee10467a6a
 
 
+## ROS2 Topics and Visualization
+
 
 ## Simulation Environments & settings
 The simulation environments and settings can be changed in ```isaac-go2-ros2/cfg/sim.yaml``` config file. 
