@@ -4,4 +4,4 @@ defaults:
 num_envs: 1
 camera_follow: True
 env_name: obstacle-dense
-# env_name: warehouse
+# env_name: full-warehouse
