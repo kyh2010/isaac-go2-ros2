@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Twist, TransformStamped
-from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs.msg import PointCloud2, PointField, Imu
 from sensor_msgs_py import point_cloud2
 from tf2_ros import TransformBroadcaster
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
@@ -31,6 +31,7 @@ class RobotDataManager(Node):
         self.num_envs = env.unwrapped.scene.num_envs
         self.lidar_annotators = lidar_annotators
         self.cameras = cameras
+        # self.imus = imus
         self.points = []
         
         # ROS2 Broadcaster
@@ -40,6 +41,7 @@ class RobotDataManager(Node):
         self.odom_pub = []
         self.pose_pub = []
         self.lidar_pub = []
+        self.imu_pub = []
 
         # ROS2 Subscriber
         self.cmd_vel_sub = []
@@ -57,6 +59,15 @@ class RobotDataManager(Node):
                 self.lidar_pub.append(
                     self.create_publisher(PointCloud2, "unitree_go2/lidar/point_cloud", 1)
                 )
+                # self.lidar_pub.append(
+                #     self.create_publisher(PointCloud2, "unitree_go2/lidar/L1/point_cloud", 1)
+                # )
+                # self.lidar_pub.append(
+                #     self.create_publisher(PointCloud2, "unitree_go2/lidar/OS1/point_cloud", 1)
+                # )
+                self.imu_pub.append(
+                    self.create_publisher(Imu, "unitree_go2/lidar/imu", 10)
+                )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, "unitree_go2/cmd_vel", 
                     lambda msg: self.cmd_vel_callback(msg, 0), 10)
@@ -69,6 +80,15 @@ class RobotDataManager(Node):
                 self.lidar_pub.append(
                     self.create_publisher(PointCloud2, f"unitree_go2_{i}/lidar/point_cloud", 10)
                 )
+                # self.lidar_pub.append(
+                #     self.create_publisher(PointCloud2, f"unitree_go2_{i}/lidar/L1/point_cloud", 10)
+                # )
+                # self.lidar_pub.append(
+                #     self.create_publisher(PointCloud2, f"unitree_go2_{i}/lidar/OS1/point_cloud", 10)
+                # )
+                self.imu_pub.append(
+                    self.create_publisher(Imu, f"unitree_go2_{i}/lidar/imu", 100)
+                )
                 self.cmd_vel_sub.append(
                     self.create_subscription(Twist, f"unitree_go2_{i}/cmd_vel", 
                     lambda msg, env_idx=i: self.cmd_vel_callback(msg, env_idx), 10)
@@ -79,13 +99,18 @@ class RobotDataManager(Node):
 
         # use wall time for lidar and odom pub
         self.odom_pose_freq = 50.0
-        self.lidar_freq = 15.0
         self.odom_pose_pub_time = time.time()
+        self.lidar_freq = 15.0
         self.lidar_pub_time = time.time() 
+        self.lidar_imu_freq = 200.0
+        self.lidar_imu_pub_time = time.time()
+        # self.lidar_L1_freq = 10.0
+        # self.lidar_L1_pub_time = time.time()
+        # self.lidar_OS1_freq = 15.0
+        # self.lidar_OS1_pub_time = time.time()
         self.create_static_transform()
         self.create_camera_publisher()  
 
- 
     def create_ros_time_graph(self):
         og.Controller.edit(
             {"graph_path": "/ClockGraph", "evaluator_name": "execution"},
@@ -143,6 +168,54 @@ class RobotDataManager(Node):
             
             # Publish the transform
             lidar_broadcaster.sendTransform(base_lidar_transform)
+
+            # lidar_L1_broadcaster = StaticTransformBroadcaster(self)
+            # base_lidar_L1_transform = TransformStamped()
+            # base_lidar_L1_transform.header.stamp = self.get_clock().now().to_msg()
+            # if (self.num_envs == 1):
+            #     base_lidar_L1_transform.header.frame_id = "unitree_go2/base_link"
+            #     base_lidar_L1_transform.child_frame_id = "unitree_go2/lidar_L1_frame"
+            # else:
+            #     base_lidar_L1_transform.header.frame_id = f"unitree_go2_{i}/base_link"
+            #     base_lidar_L1_transform.child_frame_id = f"unitree_go2_{i}/lidar_L1_frame"
+
+            # # Translation
+            # base_lidar_L1_transform.transform.translation.x = 0.28945
+            # base_lidar_L1_transform.transform.translation.y = 0.0
+            # base_lidar_L1_transform.transform.translation.z = -0.046825
+            
+            # # Rotation 
+            # base_lidar_L1_transform.transform.rotation.x = 0.0
+            # base_lidar_L1_transform.transform.rotation.y = 0.99134
+            # base_lidar_L1_transform.transform.rotation.z = 0.0
+            # base_lidar_L1_transform.transform.rotation.w = 0.13132
+            
+            # # Publish the transform
+            # lidar_L1_broadcaster.sendTransform(base_lidar_L1_transform)
+
+            # lidar_OS1_broadcaster = StaticTransformBroadcaster(self)
+            # base_lidar_OS1_transform = TransformStamped()
+            # base_lidar_OS1_transform.header.stamp = self.get_clock().now().to_msg()
+            # if (self.num_envs == 1):
+            #     base_lidar_OS1_transform.header.frame_id = "unitree_go2/base_link"
+            #     base_lidar_OS1_transform.child_frame_id = "unitree_go2/lidar_OS1_frame"
+            # else:
+            #     base_lidar_OS1_transform.header.frame_id = f"unitree_go2_{i}/base_link"
+            #     base_lidar_OS1_transform.child_frame_id = f"unitree_go2_{i}/lidar_OS1_frame"
+
+            # # Translation
+            # base_lidar_OS1_transform.transform.translation.x = 0.2
+            # base_lidar_OS1_transform.transform.translation.y = 0.0
+            # base_lidar_OS1_transform.transform.translation.z = 0.2
+            
+            # # Rotation 
+            # base_lidar_OS1_transform.transform.rotation.x = 0.0
+            # base_lidar_OS1_transform.transform.rotation.y = 0.0
+            # base_lidar_OS1_transform.transform.rotation.z = 0.0
+            # base_lidar_OS1_transform.transform.rotation.w = 1.0
+            
+            # # Publish the transform
+            # lidar_OS1_broadcaster.sendTransform(base_lidar_OS1_transform)
     
             # -------------------------------------------------------------
             # Camera
@@ -244,7 +317,59 @@ class RobotDataManager(Node):
             PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
         ]
         point_cloud = point_cloud2.create_cloud(point_cloud.header, fields, points)
-        self.lidar_pub[env_idx].publish(point_cloud)        
+        self.lidar_pub[env_idx].publish(point_cloud)
+
+    # def publish_lidar_L1_data(self, points, env_idx):
+    #     point_cloud = PointCloud2()
+    #     if (self.num_envs == 1):
+    #         point_cloud.header.frame_id = "unitree_go2/lidar_L1_frame"
+    #     else:
+    #         point_cloud.header.frame_id = f"unitree_go2_{env_idx}/lidar_L1_frame"
+    #     point_cloud.header.stamp = self.get_clock().now().to_msg()
+    #     fields = [
+    #         PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+    #         PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+    #         PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+    #     ]
+    #     point_cloud = point_cloud2.create_cloud(point_cloud.header, fields, points)
+    #     self.lidar_pub[2 * env_idx + 0].publish(point_cloud)
+
+    # def publish_lidar_OS1_data(self, points, env_idx):
+    #     point_cloud = PointCloud2()
+    #     if (self.num_envs == 1):
+    #         point_cloud.header.frame_id = "unitree_go2/lidar_OS1_frame"
+    #     else:
+    #         point_cloud.header.frame_id = f"unitree_go2_{env_idx}/lidar_OS1_frame"
+    #     point_cloud.header.stamp = self.get_clock().now().to_msg()
+    #     fields = [
+    #         PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+    #         PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+    #         PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+    #     ]
+    #     point_cloud = point_cloud2.create_cloud(point_cloud.header, fields, points)
+    #     self.lidar_pub[2 * env_idx + 1].publish(point_cloud)
+
+    def publish_lidar_imu_data(self, ori, ang_vel, lin_acc, env_idx):
+        data = Imu()
+        if self.num_envs == 1:
+            data.header.frame_id = "unitree_go2/lidar_imu_frame"
+        else:
+            data.header.frame_id = f"unitree_go2_{env_idx}/lidar_imu_frame"
+        data.header.stamp = self.get_clock().now().to_msg()
+        data.orientation.w = ori[0].item()
+        data.orientation.x = ori[1].item()
+        data.orientation.y = ori[2].item()
+        data.orientation.z = ori[3].item()
+
+        data.angular_velocity.x = ang_vel[0].item()
+        data.angular_velocity.y = ang_vel[1].item()
+        data.angular_velocity.z = ang_vel[2].item()
+
+        data.linear_acceleration.x = lin_acc[0].item()
+        data.linear_acceleration.y = lin_acc[1].item()
+        data.linear_acceleration.z = lin_acc[2].item()
+        # print(f'imu: {imu}')
+        self.imu_pub[env_idx].publish(data)
 
     def pub_ros2_data_callback(self):
         robot_data = self.env.unwrapped.scene["unitree_go2"].data
@@ -263,14 +388,30 @@ class RobotDataManager(Node):
 
     def pub_ros2_data(self):
         pub_odom_pose = False
-        pub_lidar = False
         dt_odom_pose = time.time() - self.odom_pose_pub_time
+        pub_lidar = False
         dt_lidar = time.time() - self.lidar_pub_time
+        # pub_lidar_L1 = False
+        # dt_lidar_L1 = time.time() - self.lidar_L1_pub_time
+        # pub_lidar_OS1 = False
+        # dt_lidar_OS1 = time.time() - self.lidar_OS1_pub_time
+        pub_lidar_imu = False
+        dt_lidar_imu = time.time() - self.lidar_imu_pub_time
+        
         if (dt_odom_pose >= 1./self.odom_pose_freq):
             pub_odom_pose = True
         
         if (dt_lidar >= 1./self.lidar_freq):
             pub_lidar = True
+
+        # if (dt_lidar_L1 >= 1./self.lidar_L1_freq):
+        #     pub_lidar_L1 = True
+        
+        # if (dt_lidar_OS1 >= 1./self.lidar_OS1_freq):
+        #     pub_lidar_OS1 = True
+
+        if dt_lidar_imu >= 1.0 / self.lidar_imu_freq:
+            pub_lidar_imu = True
 
         if (pub_odom_pose):
             self.odom_pose_pub_time = time.time()
@@ -288,6 +429,22 @@ class RobotDataManager(Node):
             self.lidar_pub_time = time.time()
             for i in range(self.num_envs):
                 self.publish_lidar_data(self.lidar_annotators[i].get_data()["data"].reshape(-1, 3), i)
+
+        # if (pub_lidar_L1):
+        #     self.lidar_L1_pub_time = time.time()
+        #     for i in range(self.num_envs):
+        #         self.publish_lidar_L1_data(self.lidar_annotators[2 * i + 0].get_data()["data"].reshape(-1, 3), i)
+
+        # if (pub_lidar_OS1):
+        #     self.lidar_OS1_pub_time = time.time()
+        #     for i in range(self.num_envs):
+        #         self.publish_lidar_OS1_data(self.lidar_annotators[2 * i + 1].get_data()["data"].reshape(-1, 3), i)
+
+        if pub_lidar_imu:
+            self.lidar_imu_pub_time = time.time()
+            imu_data = self.env.unwrapped.scene["lidar_imu"].data
+            for i in range(self.num_envs):
+                self.publish_lidar_imu_data(imu_data.quat_w[i], imu_data.ang_vel_b[i], imu_data.lin_acc_b[i], i)
 
     def cmd_vel_callback(self, msg, env_idx):
         go2_ctrl.base_vel_cmd_input[env_idx][0] = msg.linear.x

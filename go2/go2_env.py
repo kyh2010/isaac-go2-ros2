@@ -15,15 +15,79 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import go2.go2_ctrl as go2_ctrl
 
+from omni.isaac.lab.terrains import TerrainImporterCfg, TerrainGeneratorCfg
+import omni.isaac.lab.terrains as terrain_gen
+from omni.isaac.nucleus import get_assets_root_path
+from omni.isaac.lab.sensors import ImuCfg
+
 
 @configclass
 class Go2SimCfg(InteractiveSceneCfg):
     # ground plane
-    ground = AssetBaseCfg(prim_path="/World/ground", 
-                          spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
-                          init_state=AssetBaseCfg.InitialStateCfg(
-                              pos=(0, 0, 1e-4)
-                          ))
+    # ground = AssetBaseCfg(prim_path="/World/ground", 
+    #                       spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
+    #                       init_state=AssetBaseCfg.InitialStateCfg(
+    #                           pos=(0, 0, 1e-4)
+    #                       ))
+
+    terrain = TerrainImporterCfg(
+        prim_path="/World/ground",
+        terrain_type="generator",
+        terrain_generator=TerrainGeneratorCfg(
+            size=(8.0, 8.0),
+            border_width=20.0,
+            num_rows=10,
+            num_cols=20,
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            slope_threshold=0.75,
+            use_cache=False,
+            sub_terrains={
+                "pyramid_stairs": terrain_gen.MeshPyramidStairsTerrainCfg(
+                    proportion=0.2,
+                    step_height_range=(0.05, 0.23),
+                    step_width=0.3,
+                    platform_width=3.0,
+                    border_width=1.0,
+                    holes=False,
+                ),
+                "pyramid_stairs_inv": terrain_gen.MeshInvertedPyramidStairsTerrainCfg(
+                    proportion=0.2,
+                    step_height_range=(0.05, 0.23),
+                    step_width=0.3,
+                    platform_width=3.0,
+                    border_width=1.0,
+                    holes=False,
+                ),
+                "boxes": terrain_gen.MeshRandomGridTerrainCfg(
+                    proportion=0.2, grid_width=0.45, grid_height_range=(0.05, 0.2), platform_width=2.0
+                ),
+                "random_rough": terrain_gen.HfRandomUniformTerrainCfg(
+                    proportion=0.2, noise_range=(0.02, 0.10), noise_step=0.02, border_width=0.25
+                ),
+                "hf_pyramid_slope": terrain_gen.HfPyramidSlopedTerrainCfg(
+                    proportion=0.1, slope_range=(0.0, 0.4), platform_width=2.0, border_width=0.25
+                ),
+                "hf_pyramid_slope_inv": terrain_gen.HfInvertedPyramidSlopedTerrainCfg(
+                    proportion=0.1, slope_range=(0.0, 0.4), platform_width=2.0, border_width=0.25
+                ),
+            },
+        ),
+        max_init_terrain_level=5,
+        collision_group=-1,
+        physics_material=sim_utils.RigidBodyMaterialCfg(
+            friction_combine_mode="multiply",
+            restitution_combine_mode="multiply",
+            static_friction=1.0,
+            dynamic_friction=1.0,
+        ),
+        visual_material=sim_utils.MdlFileCfg(
+            mdl_path=get_assets_root_path()+"/Isaac/IsaacLab/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+            project_uvw=True,
+            texture_scale=(0.25, 0.25),
+        ),
+        debug_vis=False,
+    )
 
     # Lights
     light = AssetBaseCfg(
@@ -47,8 +111,15 @@ class Go2SimCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20)), 
         attach_yaw_only=True,
         pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]), 
-        debug_vis=False,
+        debug_vis=True,
         mesh_prim_paths=["/World/ground"],
+    )
+
+    lidar_imu = ImuCfg(
+        prim_path="{ENV_REGEX_NS}/Go2/base",
+        offset=ImuCfg.OffsetCfg(pos=(0.206253, -0.011775, 0.207645)),
+        update_period=0.005,    # 200 Hz
+        debug_vis=True,
     )
 
 @configclass
@@ -158,7 +229,7 @@ class Go2RSLEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.render_interval = 4 # 
         self.sim.disable_contact_processing = True
         self.sim.render.antialiasing_mode = None
-        # self.sim.physics_material = self.scene.terrain.physics_material
+        self.sim.physics_material = self.scene.terrain.physics_material
 
         # settings for rsl env control
         self.episode_length_s = 20.0 # can be ignored
